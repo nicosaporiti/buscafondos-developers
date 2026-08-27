@@ -1,0 +1,20 @@
+import { Callout } from "@/components/callout"
+
+<span className="page-kicker">Actualizaciones</span>
+# Changelog
+
+Este registro comienza con el portal. No reconstruye ni inventa una historia de versiones de la API.
+
+## Sin entradas publicadas
+
+La primera entrada debe agregarse cuando exista un cambio público que los consumidores necesiten conocer.
+
+<Callout title="Cómo agregar una entrada">Edita `content/changelog.mdx` y agrega una sección `## YYYY-MM-DD — Título`. Resume impacto, migración y contrato afectado. Si cambió la API, ejecuta primero `npm run openapi:update` y revisa el diff del snapshot.</Callout>
+
+Cada entrada debería indicar:
+
+- fecha efectiva;
+- endpoints o modelos afectados;
+- compatibilidad hacia atrás;
+- acción requerida, si existe;
+- enlace a la referencia actualizada.

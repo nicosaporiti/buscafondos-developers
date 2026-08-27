@@ -1,0 +1,23 @@
+import { Callout } from "@/components/callout"
+
+<span className="page-kicker">Credenciales</span>
+# API keys
+
+El portal no reimplementa el flujo de emisión. La fuente oficial sigue siendo [api.buscafondos.com/register](https://api.buscafondos.com/register), que verifica el email y entrega una key gratuita.
+
+## Emisión
+
+1. Ingresa tu email en el registro oficial.
+2. Abre el enlace de verificación.
+3. Guarda la key inmediatamente: **se muestra una sola vez** y el backend conserva sólo su hash.
+4. Verifícala con `GET /api/key/info` usando `X-Api-Key`.
+
+<Callout title="Si pierdes la key" tone="warning">Repite el registro con el mismo email. La key anterior se revoca durante la rotación.</Callout>
+
+## Consumo y cuota
+
+`GET /api/key/info` devuelve tu tier, cuota configurada, si está siendo aplicada y `requests_today`. Las respuestas de datos también incluyen el remanente y el instante de reset en headers.
+
+## Futuro dashboard
+
+Esta ruta está diseñada como el punto de entrada de un futuro dashboard de consumo y administración. Antes de agregarlo habrá que definir autenticación de cuenta, rotación explícita, visualización segura y páginas no indexables. No se guarda estado sensible en el portal actual.

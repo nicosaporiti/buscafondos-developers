@@ -1,0 +1,45 @@
+import { CodeExample } from "@/components/code-example"
+import { Callout } from "@/components/callout"
+
+<span className="page-kicker">Seguridad</span>
+# Autenticación
+
+Los endpoints de datos requieren una API key vigente. La política del middleware falla cerrada: si no puede validar la key, la API responde `503` en vez de permitir la llamada.
+
+## Header recomendado
+
+<CodeExample title="X-Api-Key" language="http" code={`GET /api/all-funds HTTP/1.1
+Host: api.buscafondos.com
+X-Api-Key: bf_tu_key`} />
+
+`X-Api-Key` es el esquema descrito en OpenAPI y la forma recomendada en el backend.
+
+## Alternativa Bearer
+
+El middleware actual también acepta `Authorization: Bearer` cuando el token comienza con `bf_`.
+
+<CodeExample title="Authorization" language="http" code={`Authorization: Bearer bf_tu_key`} />
+
+<Callout title="Discrepancia documentada">Bearer está admitido por el código y la política de uso, pero el snapshot OpenAPI publica únicamente el security scheme `X-Api-Key`. Los generadores de SDK verán sólo el header recomendado.</Callout>
+
+## Verificar key, cuota y consumo
+
+Consulta `GET /api/key/info`. La respuesta incluye nombre, tier, `daily_quota`, `quota_enforced`, fecha de creación y `requests_today`. El backend aplica `Cache-Control: no-store` y este endpoint no consume cuota diaria.
+
+## Backend frente a navegador
+
+| Desde backend | Desde navegador |
+| --- | --- |
+| Recomendado para producción. | Útil para pruebas manuales acotadas. |
+| Guarda la key en un secret manager o variable privada. | Cualquier persona puede inspeccionar el bundle, requests y memoria del tab. |
+| Permite controlar usuarios, caché y retry. | No incrustes la key en JavaScript ni en variables `NEXT_PUBLIC_*`. |
+
+El [playground](/playground) envía la key directamente desde tu tab a `api.buscafondos.com`, sólo en el header, y la mantiene en memoria hasta que la limpias o cierras/recargas la página. El portal no recibe la credencial.
+
+## Buenas prácticas
+
+- Nunca envíes keys en query strings: pueden terminar en URLs, logs y `Referer`.
+- No registres headers completos en observabilidad o reportes de errores.
+- Usa un `User-Agent` descriptivo para clientes automatizados.
+- Si pierdes una key gratuita, repite el registro con el mismo email; la anterior se revoca.
+- Trata la key como un secreto aunque los datos consultados sean públicos.

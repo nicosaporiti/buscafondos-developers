@@ -1,0 +1,18 @@
+import { Callout } from "@/components/callout"
+
+<span className="page-kicker">Operación</span>
+# Estado y soporte
+
+## Salud de la API
+
+Consulta [api.buscafondos.com/health](https://api.buscafondos.com/health) para ver estado, última fecha scrapeada y total de registros. El endpoint no requiere API key.
+
+La API no publica actualmente una página externa de incidentes ni un SLA. Un `status: ok` confirma que el servicio responde, no que todos los datos tengan la misma fecha.
+
+## Soporte confirmado
+
+El repositorio backend público es [nicosaporiti/cmf-api](https://github.com/nicosaporiti/cmf-api). Puedes usar sus issues para reportar problemas reproducibles del contrato o los datos.
+
+<Callout title="Antes de reportar">Incluye ruta, parámetros, status, hora aproximada y `operationId` si aplica. Elimina API keys y headers de autenticación. No publiques credenciales reales.</Callout>
+
+La [política de uso](https://api.buscafondos.com/policy) enlaza a BuscaFondos como canal general. No publicamos correos adicionales porque no están confirmados como soporte en la documentación vigente del repositorio.

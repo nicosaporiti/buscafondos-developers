@@ -1,0 +1,2492 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "CMF API",
+    "version": "1.0.0",
+    "description": "## Empieza aquí: obtén tu API key\n\n1. [Solicita gratis tu API key](https://api.buscafondos.com/register) mediante verificación por email.\n2. Verifícala en `GET /api/key/info` usando el header `X-Api-Key`.\n3. Usa el mismo header en tus requests a la API.\n\n---\n\nAPI de datos de fondos mutuos chilenos basada en información pública de la Comisión para el Mercado Financiero (CMF). Provee valores cuota diarios, patrimonio, partícipes y estadísticas de administradoras en formato JSON:API."
+  },
+  "tags": [
+    {
+      "name": "API Key",
+      "description": "### 1. Obtén tu API key\n\n[Abre el registro gratuito](https://api.buscafondos.com/register), verifica tu email y guarda la key cuando aparezca. Después úsala en el header `X-Api-Key`.",
+      "externalDocs": {
+        "description": "Obtener una API key gratuita",
+        "url": "https://api.buscafondos.com/register"
+      }
+    },
+    {
+      "name": "Health",
+      "description": "Estado del servicio y última fecha scrapeada."
+    },
+    {
+      "name": "Asset Providers",
+      "description": "Administradoras Generales de Fondos (AGF)."
+    },
+    {
+      "name": "Conceptual Assets",
+      "description": "Fondos mutuos (identificados por RUN)."
+    },
+    {
+      "name": "Real Assets",
+      "description": "Series de fondos, valores cuota diarios, TAC y riesgo."
+    },
+    {
+      "name": "AGF Stats",
+      "description": "Rankings y evolución de patrimonio/partícipes por administradora."
+    },
+    {
+      "name": "All Funds",
+      "description": "Vista consolidada de todos los fondos del mercado con variaciones."
+    },
+    {
+      "name": "Market Summary",
+      "description": "Resumen de mercado: familias AFM como índices y top movers, con outliers filtrados."
+    },
+    {
+      "name": "Cartera",
+      "description": "Cartera de inversiones (holdings) por fondo."
+    },
+    {
+      "name": "Benchmarks",
+      "description": "Benchmarks de mercado (ETF/índice) por familia comparable y sus precios crudos."
+    },
+    {
+      "name": "Article 107",
+      "description": "Declaración del reglamento vigente sobre el artículo 107 de la LIR."
+    },
+    {
+      "name": "Account",
+      "description": "Cuenta mínima, Mis Fondos y preferencias de alertas TAC."
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Health check",
+        "description": "Retorna el estado del servicio, la última fecha scrapeada y el total de registros en la base de datos.",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Estado del servicio",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "status": "ok",
+                  "last_scraped_date": "2025-03-07",
+                  "total_records": 1523750
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/asset_providers": {
+      "get": {
+        "tags": [
+          "Asset Providers"
+        ],
+        "summary": "Listar administradoras",
+        "description": "Retorna todas las Administradoras Generales de Fondos (AGF) registradas.",
+        "operationId": "list_providers_api_asset_providers_get",
+        "responses": {
+          "200": {
+            "description": "Lista de administradoras en formato JSON:API",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "data": [
+                    {
+                      "id": "123456789",
+                      "type": "asset_provider",
+                      "attributes": {
+                        "name": "BANCHILE ADMINISTRADORA GENERAL DE FONDOS S.A."
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-Api-Key": []
+          }
+        ]
+      }
+    },
+    "/api/asset_providers/{provider_id}/conceptual_assets": {
+      "get": {
+        "tags": [
+          "Conceptual Assets"
+        ],
+        "summary": "Listar fondos de una administradora",
+        "description": "Retorna todos los fondos mutuos vigentes de una administradora, incluyendo categoría y moneda.",
+        "operationId": "list_conceptual_assets_api_asset_providers__provider_id__conceptual_assets_get",
+        "parameters": [
+          {
+            "name": "provider_id",
+            "in": "path",
+            "required": true,
+            "description": "ID numérico de la administradora (CRC32)",
+            "schema": {
+              "type": "integer",
+              "description": "ID numérico de la administradora (CRC32)",
+              "title": "Provider Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de fondos mutuos en formato JSON:API",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "data": [
+                    {
+                      "id": "987654321",
+                      "type": "conceptual_asset",
+                      "attributes": {
+                        "name": "Fondo Mutuo Banchile Horizonte",
+                        "symbol": "8011-K",
+                        "run": "8011-K",
+                        "category": "equity",
+                        "currency": "CLP"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Administradora no encontrada"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-Api-Key": []
+          }
+        ]
+      }
+    },
+    "/api/conceptual_assets/{concept_id}/real_assets": {
+      "get": {
+        "tags": [
+          "Real Assets"
+        ],
+        "summary": "Listar series de un fondo",
+        "description": "Retorna todas las series de un fondo mutuo con su último valor cuota, patrimonio y partícipes.",
+        "operationId": "list_real_assets_api_conceptual_assets__concept_id__real_assets_get",
+        "parameters": [
+          {
+            "name": "concept_id",
+            "in": "path",
+            "required": true,
+            "description": "ID numérico del fondo / conceptual asset (CRC32)",
+            "schema": {
+              "type": "integer",
+              "description": "ID numérico del fondo / conceptual asset (CRC32)",
+              "title": "Concept Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de series con último valor cuota",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "data": [
+                    {
+                      "id": "111222333",
+                      "type": "real_asset",
+                      "attributes": {
+                        "name": "8011-K Serie A",
+                        "serie": "A",
+                        "run": "8011-K",
+                        "currency": "CLP",
+                        "investor_class": "Retail",
+                        "last_day": {
+                          "net_asset_value": 15234.5678,
+                          "total_net_assets": 98765432100,
+                          "shareholders": 12345,
+                          "date": "2025-03-07"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Fondo (conceptual asset) no encontrado"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-Api-Key": []
+          }
+        ]
+      }
+    },
+    "/api/real_assets/{asset_id}/days": {
+      "get": {
+        "tags": [
+          "Real Assets"
+        ],
+        "summary": "Valores cuota diarios de una serie",
+        "description": "Retorna el historial de valores cuota diarios para una serie, opcionalmente filtrado desde una fecha.",
+        "operationId": "get_days_api_real_assets__asset_id__days_get",
+        "parameters": [
+          {
+            "name": "asset_id",
+            "in": "path",
+            "required": true,
+            "description": "ID numérico de la serie / real asset (CRC32)",
+            "schema": {
+              "type": "integer",
+              "description": "ID numérico de la serie / real asset (CRC32)",
+              "title": "Asset Id"
+            }
+          },
+          {
+            "name": "from_date",
+            "in": "query",
+            "required": false,
+            "description": "Fecha inicio en formato YYYY-MM-DD",
+            "schema": {
+              "type": "string",
+              "description": "Fecha inicio en formato YYYY-MM-DD",
+              "title": "From Date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Serie temporal de valores cuota",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "data": [
+                    {
+                      "id": "111222333_2025-03-07",
+                      "type": "real_asset_day",
+                      "attributes": {
+                        "date": "2025-03-07",
+                        "price": 15234.5678
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Serie (real asset) no encontrada"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-Api-Key": []
+          }
+        ]
+      }
+    },
+    "/api/real_assets/{asset_id}/expense_ratio": {
+      "get": {
+        "tags": [
+          "Real Assets"
+        ],
+        "summary": "TAC (expense ratio) de una serie",
+        "description": "Retorna la Tasa Anual de Costos (TAC) de una serie como fracción decimal (ej: 1.32% → 0.0132).",
+        "operationId": "get_expense_ratio_api_real_assets__asset_id__expense_ratio_get",
+        "parameters": [
+          {
+            "name": "asset_id",
+            "in": "path",
+            "required": true,
+            "description": "ID numérico de la serie / real asset (CRC32)",
+            "schema": {
+              "type": "integer",
+              "description": "ID numérico de la serie / real asset (CRC32)",
+              "title": "Asset Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tasa Anual de Costos como fracción decimal",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "data": {
+                    "id": "111222333",
+                    "type": "expense_ratio",
+                    "attributes": {
+                      "expense_ratio": 0.0132,
+                      "investor_class": "Retail"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Serie (real asset) no encontrada"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-Api-Key": []
+          }
+        ]
+      }
+    },
+    "/api/real_assets/{asset_id}/risk_metrics": {
+      "get": {
+        "tags": [
+          "Real Assets"
+        ],
+        "summary": "Metricas de riesgo de una serie",
+        "description": "Retorna el ultimo snapshot de riesgo para una serie.",
+        "operationId": "get_risk_metrics_api_real_assets__asset_id__risk_metrics_get",
+        "parameters": [
+          {
+            "name": "asset_id",
+            "in": "path",
+            "required": true,
+            "description": "ID numerico de la serie / real asset (CRC32)",
+            "schema": {
+              "type": "integer",
+              "description": "ID numerico de la serie / real asset (CRC32)",
+              "title": "Asset Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ultimo snapshot de riesgo materializado para la serie",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "data": {
+                    "id": "71452046",
+                    "type": "risk_metrics",
+                    "attributes": {
+                      "run": "10058-7",
+                      "serie": "A",
+                      "as_of_date": "2026-03-31",
+                      "volatility_monthly_12m": 0.0124,
+                      "volatility_monthly_36m": 0.0151,
+                      "volatility_annualized_12m": 0.043,
+                      "volatility_annualized_36m": 0.0523,
+                      "max_drawdown_36m": -0.183,
+                      "risk_level": "high",
+                      "risk_score": 74,
+                      "method_version": "risk_v1"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Serie (real asset) no encontrada"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-Api-Key": []
+          }
+        ]
+      }
+    },
+    "/api/real_assets/{asset_id}/expense_ratio/history": {
+      "get": {
+        "tags": [
+          "Real Assets"
+        ],
+        "summary": "Historial mensual de TAC (expense ratio)",
+        "description": "Retorna el historial mensual de TAC (Tasa Anual de Costos) para una serie.",
+        "operationId": "get_expense_ratio_history_api_real_assets__asset_id__expense_ratio_history_get",
+        "parameters": [
+          {
+            "name": "asset_id",
+            "in": "path",
+            "required": true,
+            "description": "ID numérico de la serie / real asset (CRC32)",
+            "schema": {
+              "type": "integer",
+              "description": "ID numérico de la serie / real asset (CRC32)",
+              "title": "Asset Id"
+            }
+          },
+          {
+            "name": "from_date",
+            "in": "query",
+            "required": false,
+            "description": "Fecha inicio en formato YYYYMMDD",
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{8}$",
+              "description": "Fecha inicio en formato YYYYMMDD",
+              "title": "From Date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Serie temporal mensual de TAC",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "data": [
+                    {
+                      "id": "111222333_20250228",
+                      "type": "expense_ratio_month",
+                      "attributes": {
+                        "date": "20250228",
+                        "expense_ratio": 0.0132
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Serie (real asset) no encontrada"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-Api-Key": []
+          }
+        ]
+      }
+    },
+    "/api/agf_stats/ranking": {
+      "get": {
+        "tags": [
+          "AGF Stats"
+        ],
+        "summary": "Ranking de administradoras",
+        "description": "Retorna el ranking de administradoras ordenado por patrimonio o número de partícipes a la última fecha disponible.",
+        "operationId": "ranking_api_agf_stats_ranking_get",
+        "parameters": [
+          {
+            "name": "metric",
+            "in": "query",
+            "required": false,
+            "description": "Métrica de ordenamiento: `patrimony` (patrimonio) o `shareholders` (partícipes)",
+            "schema": {
+              "type": "string",
+              "pattern": "^(patrimony|shareholders)$",
+              "description": "Métrica de ordenamiento: `patrimony` (patrimonio) o `shareholders` (partícipes)",
+              "default": "patrimony",
+              "title": "Metric"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "description": "Fecha específica (YYYY-MM-DD). Si no se envía, usa la más reciente.",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fecha específica (YYYY-MM-DD). Si no se envía, usa la más reciente.",
+              "title": "Date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ranking ordenado por métrica seleccionada",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "data": [
+                    {
+                      "id": "123456789",
+                      "type": "agf_ranking",
+                      "attributes": {
+                        "administrator": "BANCHILE ADMINISTRADORA GENERAL DE FONDOS S.A.",
+                        "total_patrimony": 12345678900000,
+                        "total_shareholders": 543210,
+                        "fund_count": 45,
+                        "rank": 1
+                      }
+                    }
+                  ],
+                  "meta": {
+                    "date": "2025-03-07",
+                    "metric": "patrimony"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-Api-Key": []
+          }
+        ]
+      }
+    },
+    "/api/agf_stats/evolution": {
+      "get": {
+        "tags": [
+          "AGF Stats"
+        ],
+        "summary": "Evolución mensual de administradoras",
+        "description": "Retorna la evolución mensual de patrimonio o partícipes para una o más administradoras, en formato pivotado para gráficos.",
+        "operationId": "evolution_api_agf_stats_evolution_get",
+        "parameters": [
+          {
+            "name": "administrator",
+            "in": "query",
+            "required": true,
+            "description": "Nombres de administradoras a comparar (repetir parámetro para múltiples)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Nombres de administradoras a comparar (repetir parámetro para múltiples)",
+              "title": "Administrator"
+            }
+          },
+          {
+            "name": "metric",
+            "in": "query",
+            "required": false,
+            "description": "Métrica a graficar: `patrimony` o `shareholders`",
+            "schema": {
+              "type": "string",
+              "pattern": "^(patrimony|shareholders)$",
+              "description": "Métrica a graficar: `patrimony` o `shareholders`",
+              "default": "patrimony",
+              "title": "Metric"
+            }
+          },
+          {
+            "name": "from_month",
+            "in": "query",
+            "required": false,
+            "description": "Mes inicio en formato YYYY-MM",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Mes inicio en formato YYYY-MM",
+              "title": "From Month"
+            }
+          },
+          {
+            "name": "to_month",
+            "in": "query",
+            "required": false,
+            "description": "Mes fin en formato YYYY-MM",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Mes fin en formato YYYY-MM",
+              "title": "To Month"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Serie temporal mensual pivotada por administradora (formato Recharts)",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "data": [
+                    {
+                      "month": "2025-01",
+                      "BANCHILE ADMINISTRADORA GENERAL DE FONDOS S.A.": 12345678900000,
+                      "SCOTIABANK CHILE S.A.": 9876543210000
+                    }
+                  ],
+                  "meta": {
+                    "metric": "patrimony",
+                    "administrators": [
+                      "BANCHILE ADMINISTRADORA GENERAL DE FONDOS S.A.",
+                      "SCOTIABANK CHILE S.A."
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-Api-Key": []
+          }
+        ]
+      }
+    },
+    "/api/all-funds": {
+      "get": {
+        "tags": [
+          "All Funds"
+        ],
+        "summary": "Listar todos los fondos del mercado con variaciones",
+        "description": "Retorna todos los fondos vigentes del mercado con variaciones de precio diaria y mensual.",
+        "operationId": "list_all_funds_api_all_funds_get",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "description": "Filtrar por categoría (money_market, equity, etc.)",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filtrar por categoría (money_market, equity, etc.)",
+              "title": "Category"
+            }
+          },
+          {
+            "name": "fund_family",
+            "in": "query",
+            "required": false,
+            "description": "Filtrar por familia CMF/AFM (ej: Accionario eeuu)",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filtrar por familia CMF/AFM (ej: Accionario eeuu)",
+              "title": "Fund Family"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "description": "Fecha específica (YYYY-MM-DD). Si no se envía, usa la más reciente.",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fecha específica (YYYY-MM-DD). Si no se envía, usa la más reciente.",
+              "title": "Date"
+            }
+          },
+          {
+            "name": "article107_regulation_status",
+            "in": "query",
+            "required": false,
+            "description": "Filtrar por lo que declara el reglamento sobre el artículo 107",
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Article107RegulationStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filtrar por lo que declara el reglamento sobre el artículo 107",
+              "title": "Article107 Regulation Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de todos los fondos vigentes con variaciones diaria y mensual",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "data": [
+                    {
+                      "agf": "BANCHILE ADMINISTRADORA...",
+                      "fundName": "FM BCH AGRESIVO",
+                      "fundId": "926287998",
+                      "run": "10058-7",
+                      "category": "equity",
+                      "serie": "A",
+                      "serieId": "71452046",
+                      "currency": "PESOS",
+                      "tac": 0.0119,
+                      "investorClass": "Retail",
+                      "price": 2337.23,
+                      "dailyChange": -0.23,
+                      "monthlyChange": 1.45,
+                      "patrimony": 28461.17,
+                      "previousPatrimony": 28390.5,
+                      "monthlyPatrimony": 27810.02,
+                      "shareholders": 1320,
+                      "volatility_monthly_12m": 0.0124,
+                      "volatility_monthly_36m": 0.0151,
+                      "volatility_annualized_12m": 0.043,
+                      "volatility_annualized_36m": 0.0523,
+                      "max_drawdown_36m": -0.183,
+                      "risk_level": "high",
+                      "risk_score": 74,
+                      "risk_as_of_date": "2026-03-31",
+                      "risk_method_version": "risk_v1"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-Api-Key": []
+          }
+        ]
+      }
+    },
+    "/api/funds/{run}/article107": {
+      "get": {
+        "tags": [
+          "Article 107"
+        ],
+        "summary": "Consultar la declaración del reglamento sobre el artículo 107",
+        "operationId": "get_fund_article107_api_funds__run__article107_get",
+        "parameters": [
+          {
+            "name": "run",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Article107DetailResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "La API de artículo 107 está deshabilitada o el fondo no existe"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-Api-Key": []
+          }
+        ]
+      }
+    },
+    "/api/market-summary": {
+      "get": {
+        "tags": [
+          "Market Summary"
+        ],
+        "summary": "Resumen de mercado: familias como índices y top movers",
+        "description": "Vista compacta del mercado de fondos para el terminal: familias AFM\ncomo índices (por moneda, ponderados por patrimonio de apertura) y\nrankings de alzas/bajas, con outliers filtrados.",
+        "operationId": "market_summary_api_market_summary_get",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "description": "Fecha específica (YYYY-MM-DD); fechas de calendario inválidas responden 422. Si no se envía, usa la más reciente. ATENCIÓN: una fecha histórica es un backtest sobre el universo de fondos vigentes HOY (sesgo de supervivencia: excluye fondos cerrados después de esa fecha).",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fecha específica (YYYY-MM-DD); fechas de calendario inválidas responden 422. Si no se envía, usa la más reciente. ATENCIÓN: una fecha histórica es un backtest sobre el universo de fondos vigentes HOY (sesgo de supervivencia: excluye fondos cerrados después de esa fecha).",
+              "title": "Date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Índices por familia AFM (variación ponderada por patrimonio de apertura, por moneda) y series con mayores alzas/bajas diarias y mensuales.",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "meta": {
+                    "date": "2026-07-08",
+                    "previousDate": "2026-07-07",
+                    "methodology": "summary_v1",
+                    "universe": "current_vigente",
+                    "flows": {
+                      "universe": "historical",
+                      "daily": "ok",
+                      "monthly": "ok"
+                    },
+                    "classification": {
+                      "available": true,
+                      "reportDate": "2026-06-30",
+                      "classifiedSeries": 1923,
+                      "unclassifiedSeries": 950,
+                      "coverageByPatrimonyClp": 0.762
+                    },
+                    "topN": 10
+                  },
+                  "families": [
+                    {
+                      "family": "Accionario eeuu",
+                      "name": "Accionario eeuu",
+                      "displayGroup": "Accionario internacional",
+                      "indexCurrency": "PESOS",
+                      "dailyChange": 0.81,
+                      "monthlyChange": 2.4,
+                      "patrimonyClp": 1234567.8,
+                      "seriesCount": 240,
+                      "fundCount": 58,
+                      "byCurrency": {
+                        "PESOS": {
+                          "dailyChange": 0.81,
+                          "monthlyChange": 2.4,
+                          "patrimony": 1100000,
+                          "seriesCount": 220
+                        },
+                        "DOLAR": {
+                          "dailyChange": 0.65,
+                          "monthlyChange": 2.1,
+                          "patrimony": 141.7,
+                          "seriesCount": 20
+                        }
+                      }
+                    }
+                  ],
+                  "topGainersDaily": [
+                    {
+                      "run": "10058-7",
+                      "serie": "A",
+                      "serieId": "71452046",
+                      "fundId": "926287998",
+                      "fundName": "FM BCH AGRESIVO",
+                      "agf": "BANCHILE ADMINISTRADORA...",
+                      "category": "equity",
+                      "family": "Accionario eeuu",
+                      "currency": "PESOS",
+                      "price": 2337.23,
+                      "dailyChange": 3.53,
+                      "monthlyChange": 6.99,
+                      "patrimony": 28461.17
+                    }
+                  ],
+                  "topLosersDaily": [],
+                  "topGainersMonthly": [],
+                  "topLosersMonthly": []
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-Api-Key": []
+          }
+        ]
+      }
+    },
+    "/api/families/{family_rar}/index": {
+      "get": {
+        "tags": [
+          "Market Summary"
+        ],
+        "summary": "Índice histórico de una familia AFM (base 100, por moneda)",
+        "description": "Serie del índice precomputado de la familia. Si la familia no tiene\ndatos (o aún no corre el cron), devuelve data vacía con available=false.",
+        "operationId": "get_family_index_api_families__family_rar__index_get",
+        "parameters": [
+          {
+            "name": "family_rar",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Family Rar"
+            }
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "required": false,
+            "description": "Moneda contable del índice (PESOS, DOLAR). Default: la de mayor patrimonio.",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Moneda contable del índice (PESOS, DOLAR). Default: la de mayor patrimonio.",
+              "title": "Currency"
+            }
+          },
+          {
+            "name": "from_date",
+            "in": "query",
+            "required": false,
+            "description": "Fecha inicial inclusive (YYYY-MM-DD).",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fecha inicial inclusive (YYYY-MM-DD).",
+              "title": "From Date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Serie encadenada del índice de la familia",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "data": [
+                    {
+                      "date": "2026-01-02",
+                      "value": 100
+                    },
+                    {
+                      "date": "2026-01-03",
+                      "value": 100.31,
+                      "change": 0.31
+                    }
+                  ],
+                  "meta": {
+                    "family": "Accionario nacional",
+                    "currency": "PESOS",
+                    "availableCurrencies": [
+                      "PESOS"
+                    ],
+                    "base": 100,
+                    "methodology": "family_index_v1",
+                    "available": true
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-Api-Key": []
+          }
+        ]
+      }
+    },
+    "/api/funds/{run}/cartera/resumen": {
+      "get": {
+        "tags": [
+          "Cartera"
+        ],
+        "summary": "Resumen de cartera de un fondo",
+        "description": "Resumen de cartera agrupado por tipo de instrumento, combinando holdings nacionales y extranjeros.",
+        "operationId": "get_cartera_resumen_api_funds__run__cartera_resumen_get",
+        "parameters": [
+          {
+            "name": "run",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run"
+            }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": false,
+            "description": "Mes en formato YYYY-MM (default: último disponible)",
+            "schema": {
+              "type": "string",
+              "description": "Mes en formato YYYY-MM (default: último disponible)",
+              "title": "Month"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resumen agrupado por tipo de instrumento",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "data": [
+                    {
+                      "type": "cartera_resumen",
+                      "attributes": {
+                        "tipo_instrumento": "ETFA",
+                        "num_holdings": 10,
+                        "valorizacion_nacional": 0,
+                        "valorizacion_extranjera": 154271000,
+                        "pct_activo_fondo": 99.5
+                      }
+                    }
+                  ],
+                  "meta": {
+                    "run": "9570",
+                    "month": "2025-02"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-Api-Key": []
+          }
+        ]
+      }
+    },
+    "/api/funds/{run}/cartera/holdings": {
+      "get": {
+        "tags": [
+          "Cartera"
+        ],
+        "summary": "Holdings individuales de un fondo",
+        "description": "Lista de holdings individuales de un fondo, ordenados por peso en el activo.",
+        "operationId": "get_cartera_holdings_api_funds__run__cartera_holdings_get",
+        "parameters": [
+          {
+            "name": "run",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Run"
+            }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": false,
+            "description": "Mes en formato YYYY-MM (default: último disponible)",
+            "schema": {
+              "type": "string",
+              "description": "Mes en formato YYYY-MM (default: último disponible)",
+              "title": "Month"
+            }
+          },
+          {
+            "name": "market",
+            "in": "query",
+            "required": false,
+            "description": "Filtro de mercado: N (nacional), E (extranjera), all",
+            "schema": {
+              "type": "string",
+              "description": "Filtro de mercado: N (nacional), E (extranjera), all",
+              "default": "all",
+              "title": "Market"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de instrumentos en cartera",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "data": [
+                    {
+                      "type": "holding",
+                      "attributes": {
+                        "market": "extranjera",
+                        "nemotecnico": "ESGV US",
+                        "emisor": "Vanguard",
+                        "pais": "US",
+                        "tipo_instrumento": "ETFA",
+                        "valorizacion": 119685734,
+                        "pct_activo_fondo": 29.824
+                      }
+                    }
+                  ],
+                  "meta": {
+                    "run": "9570",
+                    "month": "2025-02"
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-Api-Key": []
+          }
+        ]
+      }
+    },
+    "/api/benchmarks": {
+      "get": {
+        "tags": [
+          "Benchmarks"
+        ],
+        "summary": "Catálogo de benchmarks por familia",
+        "description": "Catálogo de benchmarks activos (familia → símbolo, índice, moneda).",
+        "operationId": "list_benchmarks_api_benchmarks_get",
+        "responses": {
+          "200": {
+            "description": "Mapeo familia comparable → símbolo de benchmark",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "data": [
+                    {
+                      "type": "benchmark",
+                      "attributes": {
+                        "family_rar": "Accionario eeuu",
+                        "symbol": "VOO",
+                        "index_name": "S&P 500",
+                        "instrument_name": "Vanguard S&P 500 ETF",
+                        "native_currency": "USD",
+                        "asset_class": "equity"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-Api-Key": []
+          }
+        ]
+      }
+    },
+    "/api/benchmarks/{family_rar}/prices": {
+      "get": {
+        "tags": [
+          "Benchmarks"
+        ],
+        "summary": "Serie de precios cruda del benchmark de una familia",
+        "description": "Serie cruda de precios del benchmark de una familia.\n\nDevuelve precios crudos en moneda nativa (USD o CLP). El cálculo de retornos\ny la conversión a USD/UF los hace el frontend. Si la familia no tiene\nbenchmark, devuelve `data` vacío con `meta.has_benchmark = false`.",
+        "operationId": "get_benchmark_prices_api_benchmarks__family_rar__prices_get",
+        "parameters": [
+          {
+            "name": "family_rar",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Family Rar"
+            }
+          },
+          {
+            "name": "from_date",
+            "in": "query",
+            "required": false,
+            "description": "Fecha inicial inclusive en formato YYYY-MM-DD",
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "description": "Fecha inicial inclusive en formato YYYY-MM-DD",
+              "title": "From Date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Precios crudos en moneda nativa (sin retornos ni conversión)",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "data": [
+                    {
+                      "date": "2025-01-02",
+                      "close": 540.12,
+                      "currency": "USD"
+                    }
+                  ],
+                  "meta": {
+                    "family_rar": "Accionario eeuu",
+                    "symbol": "VOO",
+                    "index_name": "S&P 500",
+                    "instrument_name": "Vanguard S&P 500 ETF",
+                    "native_currency": "USD",
+                    "has_benchmark": true
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-Api-Key": []
+          }
+        ]
+      }
+    },
+    "/api/reports/tac-changes": {
+      "get": {
+        "tags": [
+          "Reports"
+        ],
+        "summary": "Ranking de fondos que mas variaron su TAC (expense ratio) mes a mes",
+        "description": "Compara el TAC real (expense ratio) de cada serie entre el mes solicitado y\nel mes anterior y devuelve el ranking ya armado, deduplicado a una serie por\nfondo (la de mayor variacion en la direccion pedida).",
+        "operationId": "tac_changes_api_reports_tac_changes_get",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "description": "Fecha del mes calendario cerrado (YYYY-MM-DD). Si no se envia, usa el ultimo mes con TAC.",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Fecha del mes calendario cerrado (YYYY-MM-DD). Si no se envia, usa el ultimo mes con TAC.",
+              "title": "Date"
+            }
+          },
+          {
+            "name": "direction",
+            "in": "query",
+            "required": false,
+            "description": "up = mayores alzas de TAC; down = mayores bajas.",
+            "schema": {
+              "type": "string",
+              "pattern": "^(up|down)$",
+              "description": "up = mayores alzas de TAC; down = mayores bajas.",
+              "default": "up",
+              "title": "Direction"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Cantidad de fondos a devolver.",
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Cantidad de fondos a devolver.",
+              "default": 15,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "description": "Filtrar por categoria (money_market, equity, etc.).",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filtrar por categoria (money_market, equity, etc.).",
+              "title": "Category"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ranking precomputado de cambios de TAC real entre el mes solicitado y el mes anterior. Reemplaza el calculo por serie del cliente (una sola request en vez de ~2600).",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "data": [
+                    {
+                      "fundId": "926287998",
+                      "fundName": "FM BCH AGRESIVO",
+                      "agf": "BANCHILE ADMINISTRADORA...",
+                      "run": "10058-7",
+                      "serie": "A",
+                      "serieId": "71452046",
+                      "category": "equity",
+                      "investorClass": "Retail",
+                      "patrimony": 28461.17,
+                      "tac": 0.0132,
+                      "tacPrevious": 0.0119,
+                      "tacDelta": 0.0013,
+                      "tacDeltaPct": 10.92
+                    }
+                  ],
+                  "meta": {
+                    "date": "2026-04-30",
+                    "previousDate": "2026-03-31",
+                    "currentMonthKey": "202604",
+                    "previousMonthKey": "202603",
+                    "direction": "up",
+                    "limit": 15
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-Api-Key": []
+          }
+        ]
+      }
+    },
+    "/api/key/info": {
+      "get": {
+        "tags": [
+          "API Key"
+        ],
+        "summary": "2. Verifica tu API key",
+        "description": "Después de [obtener tu API key](https://api.buscafondos.com/register), envíala en el header `X-Api-Key` para confirmar su tier, cuota y consumo del día.",
+        "operationId": "key_info_api_key_info_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-Api-Key": []
+          }
+        ]
+      }
+    },
+    "/api/auth/magic-link": {
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Request Magic Link",
+        "operationId": "request_magic_link_api_auth_magic_link_post",
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MagicLinkRequest"
+              }
+            }
+          },
+          "required": true
+        }
+      }
+    },
+    "/api/auth/google": {
+      "get": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Start Google Login",
+        "operationId": "start_google_login_api_auth_google_get",
+        "parameters": [
+          {
+            "name": "return_url",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Return Url"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/google/callback": {
+      "get": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Finish Google Login",
+        "operationId": "finish_google_login_api_auth_google_callback_get",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Code"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "State"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/callback": {
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Complete Login",
+        "operationId": "complete_login_api_auth_callback_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginCallbackRequest"
+              }
+            }
+          },
+          "required": true
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Logout",
+        "operationId": "logout_api_auth_logout_post",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        }
+      }
+    },
+    "/api/me": {
+      "get": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Get Me",
+        "operationId": "get_me_api_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Remove Account",
+        "operationId": "remove_account_api_me_delete",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        }
+      }
+    },
+    "/api/me/watchlist": {
+      "get": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Get Watchlist",
+        "operationId": "get_watchlist_api_me_watchlist_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Add To Watchlist",
+        "operationId": "add_to_watchlist_api_me_watchlist_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WatchlistRequest"
+              }
+            }
+          },
+          "required": true
+        }
+      }
+    },
+    "/api/me/watchlist/{serie_id}": {
+      "delete": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Remove From Watchlist",
+        "operationId": "remove_from_watchlist_api_me_watchlist__serie_id__delete",
+        "parameters": [
+          {
+            "name": "serie_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Serie Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/me/alerts": {
+      "patch": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Update Alert Preferences",
+        "operationId": "update_alert_preferences_api_me_alerts_patch",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlertPreferenceRequest"
+              }
+            }
+          },
+          "required": true
+        }
+      }
+    },
+    "/api/alerts/unsubscribe": {
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "Unsubscribe",
+        "operationId": "unsubscribe_api_alerts_unsubscribe_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnsubscribeRequest"
+              }
+            }
+          },
+          "required": true
+        }
+      }
+    },
+    "/api/alerts/unsubscribe/one-click": {
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "summary": "One Click Unsubscribe",
+        "operationId": "one_click_unsubscribe_api_alerts_unsubscribe_one_click_post",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Token"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AlertPreferenceRequest": {
+        "properties": {
+          "email_opt_in_alerts": {
+            "type": "boolean",
+            "title": "Email Opt In Alerts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email_opt_in_alerts"
+        ],
+        "title": "AlertPreferenceRequest"
+      },
+      "Article107DetailResponse": {
+        "properties": {
+          "run": {
+            "type": "string",
+            "title": "Run"
+          },
+          "article107RegulationStatus": {
+            "$ref": "#/components/schemas/Article107RegulationStatus"
+          },
+          "sourceFreshness": {
+            "$ref": "#/components/schemas/Article107SourceFreshness"
+          },
+          "statusReason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Statusreason"
+          },
+          "lastSuccessfulAssessmentAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lastsuccessfulassessmentat"
+          },
+          "updatedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updatedat"
+          },
+          "source": {
+            "$ref": "#/components/schemas/Article107SourceResponse"
+          },
+          "review": {
+            "$ref": "#/components/schemas/Article107ReviewResponse"
+          },
+          "evidence": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Article107EvidenceResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "disclaimer": {
+            "type": "string",
+            "title": "Disclaimer"
+          }
+        },
+        "type": "object",
+        "required": [
+          "run",
+          "article107RegulationStatus",
+          "sourceFreshness",
+          "source",
+          "review",
+          "disclaimer"
+        ],
+        "title": "Article107DetailResponse"
+      },
+      "Article107EvidenceResponse": {
+        "properties": {
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          },
+          "page": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page"
+          },
+          "offset": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Offset"
+          },
+          "section": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Article107Section"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ruleId": {
+            "type": "string",
+            "title": "Ruleid"
+          },
+          "parserVersion": {
+            "type": "string",
+            "title": "Parserversion"
+          },
+          "classifierVersion": {
+            "type": "string",
+            "title": "Classifierversion"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ruleId",
+          "parserVersion",
+          "classifierVersion"
+        ],
+        "title": "Article107EvidenceResponse"
+      },
+      "Article107RegulationStatus": {
+        "type": "string",
+        "enum": [
+          "declares_eligible",
+          "declares_not_eligible",
+          "unknown"
+        ],
+        "title": "Article107RegulationStatus"
+      },
+      "Article107ReviewResponse": {
+        "properties": {
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Article107ReviewStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reviewedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewedat"
+          },
+          "reviewedBy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewedby"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "title": "Article107ReviewResponse"
+      },
+      "Article107ReviewStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "approved",
+          "rejected"
+        ],
+        "title": "Article107ReviewStatus"
+      },
+      "Article107Section": {
+        "type": "string",
+        "enum": [
+          "3.1",
+          "3.2"
+        ],
+        "title": "Article107Section"
+      },
+      "Article107SourceFreshness": {
+        "type": "string",
+        "enum": [
+          "fresh",
+          "stale",
+          "unknown"
+        ],
+        "title": "Article107SourceFreshness"
+      },
+      "Article107SourceResponse": {
+        "properties": {
+          "cmfDocumentId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cmfdocumentid"
+          },
+          "observedCmfDocumentId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observedcmfdocumentid"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          },
+          "sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sha256"
+          },
+          "cmfDepositDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cmfdepositdate"
+          },
+          "cmfLastModifiedDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cmflastmodifieddate"
+          },
+          "fetchedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fetchedat"
+          }
+        },
+        "type": "object",
+        "title": "Article107SourceResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "LoginCallbackRequest": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 256
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
+          "token": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 256
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Token"
+          }
+        },
+        "type": "object",
+        "title": "LoginCallbackRequest"
+      },
+      "MagicLinkRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "title": "Email"
+          },
+          "return_url": {
+            "type": "string",
+            "maxLength": 2048,
+            "title": "Return Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "return_url"
+        ],
+        "title": "MagicLinkRequest"
+      },
+      "UnsubscribeRequest": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 2048,
+            "title": "Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "title": "UnsubscribeRequest"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "WatchlistRequest": {
+        "properties": {
+          "serie_id": {
+            "type": "string",
+            "maxLength": 10,
+            "title": "Serie Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "serie_id"
+        ],
+        "title": "WatchlistRequest"
+      }
+    },
+    "securitySchemes": {
+      "X-Api-Key": {
+        "type": "apiKey",
+        "description": "API key de BuscaFondos.",
+        "in": "header",
+        "name": "X-Api-Key"
+      }
+    }
+  },
+  "x-api-key-policy": "required"
+}

@@ -1,0 +1,64 @@
+import { CodeExample } from "@/components/code-example"
+import { Callout } from "@/components/callout"
+
+<span className="page-kicker">Primeros pasos</span>
+# Haz tu primer request
+
+Desde obtener una key hasta leer datos de producción en menos de cinco minutos.
+
+## 1. Obtén y guarda tu API key
+
+Solicita una key gratuita en [api.buscafondos.com/register](https://api.buscafondos.com/register). Después de verificar tu email, la key se muestra **una sola vez**. Guárdala en el gestor de secretos de tu entorno.
+
+<Callout title="No la pegues en el código fuente" tone="warning">Usa una variable de entorno sólo del servidor. No la expongas en variables públicas, repositorios ni capturas.</Callout>
+
+## 2. Verifica la key
+
+<CodeExample title="curl" language="bash" code={`curl https://api.buscafondos.com/api/key/info \\
+  -H "X-Api-Key: $BUSCAFONDOS_API_KEY"`} />
+
+`/api/key/info` confirma el tier, la cuota diaria y el consumo del día. Esta verificación no descuenta cuota.
+
+## 3. Consulta fondos
+
+<CodeExample title="JavaScript / TypeScript" language="typescript" code={`const response = await fetch(
+  "https://api.buscafondos.com/api/all-funds?category=money_market",
+  { headers: { "X-Api-Key": process.env.BUSCAFONDOS_API_KEY! } },
+);
+
+if (!response.ok) {
+  throw new Error(\`BuscaFondos respondió \${response.status}\`);
+}
+
+const payload: unknown = await response.json();`} />
+
+<CodeExample title="Python" language="python" code={`import os
+import requests
+
+response = requests.get(
+    "https://api.buscafondos.com/api/all-funds",
+    params={"category": "money_market"},
+    headers={"X-Api-Key": os.environ["BUSCAFONDOS_API_KEY"]},
+    timeout=20,
+)
+response.raise_for_status()
+payload = response.json()`} />
+
+## Respuesta real de producción
+
+El endpoint público `/health` devolvió esta respuesta el **26 de agosto de 2026**. Sirve para comprobar conectividad sin enviar una key.
+
+<CodeExample title="GET /health · 200 OK" language="json" code={`{
+  "status": "ok",
+  "last_scraped_date": "2026-08-25",
+  "total_records": 4913905
+}`} />
+
+Los ejemplos de datos de fondos en la [referencia API](/reference) provienen del snapshot OpenAPI del backend y se actualizan con él.
+
+## Próximos pasos
+
+- Revisa [autenticación](/authentication) antes de integrar la key.
+- Implementa manejo de [cuotas y errores](/quotas-errors).
+- Explora parámetros y respuestas en la [referencia](/reference).
+- Prueba un GET desde tu navegador en el [playground](/playground).
