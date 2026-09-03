@@ -4,10 +4,10 @@ Portal de documentación y onboarding para la API de fondos mutuos chilenos de [
 
 - Portal: `https://developers.buscafondos.com`
 - API: `https://api.buscafondos.com`
-- Backend: `cmf-api` (repositorio privado; el portal no enlaza a él)
+- Backend: repositorio privado; el portal no enlaza a él
 - Soporte técnico: `api@buscafondos.com`
 
-Este repositorio es independiente de `cmf-api` y de `agfapp`. Ambos se consultaron como referencia; ninguno se modifica desde aquí.
+Este repositorio es independiente del backend y de la app principal. Ambos se consultaron como referencia; ninguno se modifica desde aquí.
 
 ## Requisitos
 
@@ -50,7 +50,7 @@ npm run check
 
 ## Actualizar el snapshot OpenAPI
 
-El contrato lo define `cmf-api`. El portal versiona un snapshot en `openapi/buscafondos.openapi.json` para que el build no dependa de producción.
+El contrato lo define el backend. El portal versiona un snapshot en `openapi/buscafondos.openapi.json` para que el build no dependa de producción.
 
 ```bash
 npm run openapi:update

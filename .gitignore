@@ -9,3 +9,6 @@ coverage/
 .env*
 !.env.example
 .gstack/
+
+# Skills de terceros instaladas localmente (sin licencia redistribuible)
+.agents/

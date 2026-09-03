@@ -5,7 +5,7 @@
 - Español de Chile es el idioma inicial y único.
 - `developers.buscafondos.com` será el canonical definitivo, aunque aún no exista DNS.
 - El flujo oficial de keys permanece en `api.buscafondos.com/register`.
-- El backend `cmf-api` es privado. El portal no enlaza al repositorio; el canal de soporte técnico es `api@buscafondos.com`.
+- El backend es privado. El portal no enlaza al repositorio; el canal de soporte técnico es `api@buscafondos.com`.
 - No existe status page externa ni SLA confirmado.
 - El snapshot OpenAPI de producción prevalece sobre inventarios manuales.
 - Con una sola persona mantenedora, componentes locales y scripts directos pesan menos que un CMS o un pipeline externo.

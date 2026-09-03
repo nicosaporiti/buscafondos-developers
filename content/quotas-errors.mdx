@@ -23,7 +23,7 @@ Los cuatro headers están expuestos vía CORS, así que también son legibles de
 - `429 Too Many Requests`: cuota diaria agotada o exceso de tasa. Cuando se agota la cuota, incluye los cuatro headers anteriores.
 - `5xx`: falla transitoria o datos en actualización. La validación de keys y algunos resúmenes pueden responder `503` con `Retry-After: 5`.
 
-<Callout title="Origen de esta información">El snapshot OpenAPI no declara estas respuestas del middleware en cada operación. El comportamiento descrito fue verificado en el código del backend (`app/apikeys.py`, `app/main.py`). La referencia generada muestra únicamente lo que declara OpenAPI.</Callout>
+<Callout title="Origen de esta información">El snapshot OpenAPI no declara estas respuestas del middleware en cada operación. El comportamiento descrito fue verificado contra el backend y la política de uso pública. La referencia generada muestra únicamente lo que declara OpenAPI.</Callout>
 
 ## Retry con backoff y jitter
 

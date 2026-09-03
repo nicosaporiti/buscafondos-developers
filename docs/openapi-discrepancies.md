@@ -1,10 +1,10 @@
 # Discrepancias observadas
 
-Inspección realizada el 26 de agosto de 2026. Cuando hay diferencias, el snapshot OpenAPI de producción y el código de `cmf-api` prevalecen.
+Inspección realizada el 26 de agosto de 2026. Cuando hay diferencias, el snapshot OpenAPI de producción y el comportamiento observado de la API prevalecen.
 
 ## Inventario escrito rezagado
 
-`doc/api.md` enumera 13 endpoints GET. El snapshot descargado contiene 31 rutas y 33 operaciones. Entre las operaciones presentes en OpenAPI pero ausentes de los encabezados de `doc/api.md` están:
+El inventario narrativo previo enumera 13 endpoints GET. El snapshot descargado contiene 31 rutas y 33 operaciones. Entre las operaciones presentes en OpenAPI pero ausentes de ese inventario están:
 
 - `GET /api/real_assets/{asset_id}/expense_ratio/history`
 - `GET /api/market-summary`
@@ -15,15 +15,15 @@ Inspección realizada el 26 de agosto de 2026. Cuando hay diferencias, el snapsh
 - `GET /api/key/info`
 - rutas de cuenta bajo `/api/auth`, `/api/me` y `/api/alerts`
 
-La documentación de cuenta está repartida en otros archivos del backend. `doc/api.md` por sí solo no representa el contrato completo.
+El inventario narrativo por sí solo no representa el contrato completo; el snapshot OpenAPI es la fuente de verdad.
 
 ## Bearer no expresado como security scheme
 
-`app/apikeys.py` acepta `Authorization: Bearer bf_…` y la política pública lo documenta. OpenAPI define solo `X-Api-Key`, por lo que los generadores de SDK no descubrirán Bearer. El portal recomienda `X-Api-Key` y presenta Bearer como alternativa de runtime con esta advertencia.
+La API acepta `Authorization: Bearer bf_…` y la política pública lo documenta. OpenAPI define solo `X-Api-Key`, por lo que los generadores de SDK no descubrirán Bearer. El portal recomienda `X-Api-Key` y presenta Bearer como alternativa de runtime con esta advertencia.
 
 ## Errores del middleware ausentes de operaciones
 
-La mayoría de las operaciones protegidas no declaran respuestas `401`, `429` o `503` en OpenAPI, aunque `ApiKeyMiddleware` las produce. El portal documenta ese comportamiento en la guía de cuotas; la referencia generada no agrega respuestas que el contrato no declara.
+La mayoría de las operaciones protegidas no declaran respuestas `401`, `429` o `503` en OpenAPI, aunque la API las produce. El portal documenta ese comportamiento en la guía de cuotas; la referencia generada no agrega respuestas que el contrato no declara.
 
 ## Schemas incompletos
 
