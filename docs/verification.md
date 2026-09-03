@@ -1,6 +1,6 @@
 # Verificación
 
-Fecha: 27 de agosto de 2026.
+Fecha: 2 de septiembre de 2026 (rediseño con la guía de Vercel).
 
 ## Automatizada
 
@@ -10,8 +10,8 @@ Fecha: 27 de agosto de 2026.
 | `npm run lint` | PASS — sin warnings |
 | `npm run typecheck` | PASS — TypeScript strict |
 | `npm test` | PASS — 10 archivos, 29 pruebas |
-| `npm run build` | PASS — 13 rutas listadas como `○ Static`; 14 páginas estáticas generadas |
-| `npm run check:bundle-secrets` | PASS — 302 artefactos revisados, sin patrones de API key |
+| `npm run build` | PASS — 13 rutas listadas como `○ Static`; 14 páginas estáticas generadas; fuentes Geist self-hosted |
+| `npm run check:bundle-secrets` | PASS — 394 artefactos revisados, sin patrones de API key |
 
 ## Cobertura de pruebas
 
@@ -32,8 +32,9 @@ Fecha: 27 de agosto de 2026.
 
 Revisión real del build de producción con Chrome:
 
-- desktop: home, quickstart, referencia y playground a 1512 px, sin overflow horizontal;
+- desktop: home, quickstart, referencia y playground a 1440 px, sin overflow horizontal;
 - móvil: home, quickstart, referencia y playground a 390 px, sin overflow horizontal;
+- botón primario con texto visible en tema claro y oscuro; sidebar alineado bajo el header;
 - sidebar trigger móvil expuesto como `Abrir navegación de documentación`;
 - input de API key con label visible en el playground;
 - tema claro y oscuro verificados;

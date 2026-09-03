@@ -2,12 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CodeExample } from "./code-example";
-import { KeyIcon, TerminalIcon } from "./icons";
+import { KeyIcon } from "./icons";
 
 export type PlaygroundParameter = Readonly<{ name: string; required: boolean }>;
 export type PlaygroundEndpoint = Readonly<{
@@ -110,28 +109,24 @@ export function Playground({ endpoints }: { readonly endpoints: readonly Playgro
   }
 
   return (
-    <div className="playground-grid">
-      <Card className="playground-controls">
-        <CardHeader><TerminalIcon /><CardTitle asChild><h2>Request</h2></CardTitle><CardDescription>GET directo desde este tab a api.buscafondos.com.</CardDescription></CardHeader>
-        <CardContent>
-          <div className="field"><Label htmlFor="endpoint">Endpoint</Label><Select value={selectedEndpoint.id} onValueChange={changeEndpoint} disabled={isRequestInFlight}><SelectTrigger id="endpoint" aria-label="Endpoint GET"><SelectValue /></SelectTrigger><SelectContent>{endpoints.map((item) => <SelectItem key={item.id} value={item.id}><span className="select-endpoint">GET {item.path}</span></SelectItem>)}</SelectContent></Select><small>{selectedEndpoint.summary}</small></div>
-          {selectedEndpoint.pathParameters.map((parameter) => <div className="field" key={`path-${parameter.name}`}><Label htmlFor={`path-${parameter.name}`}>{parameter.name} <span>ruta{parameter.required ? " · requerido" : ""}</span></Label><Input id={`path-${parameter.name}`} value={pathValues[parameter.name] ?? ""} onChange={(event) => setPathValues((current) => ({ ...current, [parameter.name]: event.target.value }))} disabled={isRequestInFlight} autoComplete="off" required={parameter.required} aria-invalid={isRequiredParameterMissing(parameter, pathValues)} aria-describedby={isRequiredParameterMissing(parameter, pathValues) ? "playground-required-parameters" : undefined} /></div>)}
-          {selectedEndpoint.queryParameters.map((parameter) => <div className="field" key={`query-${parameter.name}`}><Label htmlFor={`query-${parameter.name}`}>{parameter.name} <span>query{parameter.required ? " · requerido" : " · opcional"}</span></Label><Input id={`query-${parameter.name}`} value={queryValues[parameter.name] ?? ""} onChange={(event) => setQueryValues((current) => ({ ...current, [parameter.name]: event.target.value }))} disabled={isRequestInFlight} autoComplete="off" required={parameter.required} aria-invalid={isRequiredParameterMissing(parameter, queryValues)} aria-describedby={isRequiredParameterMissing(parameter, queryValues) ? "playground-required-parameters" : undefined} /></div>)}
-          {selectedEndpoint.protected ? <div className="field key-field"><Label htmlFor="playground-api-key">API key <span>secreto · sólo memoria</span></Label><Input id="playground-api-key" type="password" value={apiKey} onChange={(event) => setApiKey(event.target.value)} disabled={isRequestInFlight} placeholder="bf_…" autoComplete="off" autoCapitalize="none" spellCheck={false} /><small>Se envía únicamente en `X-Api-Key` a la API. Nunca al servidor del portal.</small></div> : null}
-          <div className="request-preview"><span>GET</span><code>{requestUrl}</code></div>
-          {hasMissingRequiredParameters ? <p id="playground-required-parameters" className="response-error" role="alert">{missingRequiredParametersMessage}</p> : null}
-          <div className="playground-actions"><Button onClick={() => void sendRequest()} disabled={isRequestInFlight || hasMissingRequiredParameters}>{isRequestInFlight ? "Enviando…" : "Enviar request"}</Button><Button variant="outline" onClick={clearCredential} disabled={isRequestInFlight || apiKey === ""}><KeyIcon /> Limpiar credencial</Button></div>
-        </CardContent>
-      </Card>
-      <Card className="playground-output" aria-live="polite">
-        <CardHeader><CardTitle asChild><h2>Response</h2></CardTitle><CardDescription>Status, duración, headers relevantes y cuerpo.</CardDescription></CardHeader>
-        <CardContent>
-          {state.status === "idle" ? <div className="empty-response"><TerminalIcon /><p>Configura el request y presiona “Enviar request”.</p></div> : null}
-          {state.status === "loading" ? <div className="loading-response"><span /> Esperando respuesta…</div> : null}
-          {state.status === "error" ? <div className="response-error" role="alert">{state.message}</div> : null}
-          {state.status === "success" ? <div className="response-data"><div className="response-meta"><strong data-ok={state.response.status < 400}>{state.response.status} {state.response.statusText}</strong><span>{state.response.durationMs} ms</span></div>{Object.keys(state.response.headers).length > 0 ? <dl>{Object.entries(state.response.headers).map(([name, value]) => <div key={name}><dt>{name}</dt><dd>{value}</dd></div>)}</dl> : null}<CodeExample title="Body" language="json" code={state.response.body} /></div> : null}
-        </CardContent>
-      </Card>
+    <div className="playground">
+      <section className="playground-request" aria-labelledby="playground-request-title">
+        <header><h2 id="playground-request-title" className="heading-20">Request</h2><p>GET directo desde este tab a api.buscafondos.com.</p></header>
+        <div className="field"><Label htmlFor="endpoint">Endpoint</Label><Select value={selectedEndpoint.id} onValueChange={changeEndpoint} disabled={isRequestInFlight}><SelectTrigger id="endpoint" aria-label="Endpoint GET"><SelectValue /></SelectTrigger><SelectContent>{endpoints.map((item) => <SelectItem key={item.id} value={item.id}><span className="select-endpoint">GET {item.path}</span></SelectItem>)}</SelectContent></Select><small>{selectedEndpoint.summary}</small></div>
+        {selectedEndpoint.pathParameters.map((parameter) => <div className="field" key={`path-${parameter.name}`}><Label htmlFor={`path-${parameter.name}`}>{parameter.name} <span>ruta{parameter.required ? ", requerido" : ""}</span></Label><Input id={`path-${parameter.name}`} value={pathValues[parameter.name] ?? ""} onChange={(event) => setPathValues((current) => ({ ...current, [parameter.name]: event.target.value }))} disabled={isRequestInFlight} autoComplete="off" required={parameter.required} aria-invalid={isRequiredParameterMissing(parameter, pathValues)} aria-describedby={isRequiredParameterMissing(parameter, pathValues) ? "playground-required-parameters" : undefined} /></div>)}
+        {selectedEndpoint.queryParameters.map((parameter) => <div className="field" key={`query-${parameter.name}`}><Label htmlFor={`query-${parameter.name}`}>{parameter.name} <span>query{parameter.required ? ", requerido" : ", opcional"}</span></Label><Input id={`query-${parameter.name}`} value={queryValues[parameter.name] ?? ""} onChange={(event) => setQueryValues((current) => ({ ...current, [parameter.name]: event.target.value }))} disabled={isRequestInFlight} autoComplete="off" required={parameter.required} aria-invalid={isRequiredParameterMissing(parameter, queryValues)} aria-describedby={isRequiredParameterMissing(parameter, queryValues) ? "playground-required-parameters" : undefined} /></div>)}
+        {selectedEndpoint.protected ? <div className="field key-field"><Label htmlFor="playground-api-key">API key <span>secreto, solo en memoria</span></Label><Input id="playground-api-key" type="password" value={apiKey} onChange={(event) => setApiKey(event.target.value)} disabled={isRequestInFlight} placeholder="bf_…" autoComplete="off" autoCapitalize="none" spellCheck={false} /><small>Se envía únicamente en el header X-Api-Key a la API. Nunca al servidor del portal.</small></div> : null}
+        <div className="request-preview"><span>GET</span><code>{requestUrl}</code></div>
+        {hasMissingRequiredParameters ? <p id="playground-required-parameters" className="response-error" role="alert">{missingRequiredParametersMessage}</p> : null}
+        <div className="playground-actions"><Button size="lg" onClick={() => void sendRequest()} disabled={isRequestInFlight || hasMissingRequiredParameters}>{isRequestInFlight ? "Enviando…" : "Enviar request"}</Button><Button size="lg" variant="outline" onClick={clearCredential} disabled={isRequestInFlight || apiKey === ""}><KeyIcon /> Limpiar credencial</Button></div>
+      </section>
+      <section className="playground-output" aria-labelledby="playground-response-title" aria-live="polite">
+        <header><h2 id="playground-response-title" className="heading-20">Response</h2><p>Status, duración, headers relevantes y cuerpo.</p></header>
+        {state.status === "idle" ? <div className="empty-response"><p>Configura el request y presiona “Enviar request”.</p></div> : null}
+        {state.status === "loading" ? <div className="loading-response"><span /> Esperando respuesta…</div> : null}
+        {state.status === "error" ? <div className="response-error" role="alert">{state.message}</div> : null}
+        {state.status === "success" ? <div className="response-data"><div className="response-meta"><strong data-ok={state.response.status < 400}>{state.response.status} {state.response.statusText}</strong><span>{state.response.durationMs} ms</span></div>{Object.keys(state.response.headers).length > 0 ? <dl>{Object.entries(state.response.headers).map(([name, value]) => <div key={name}><dt>{name}</dt><dd>{value}</dd></div>)}</dl> : null}<CodeExample title="Body" language="json" code={state.response.body} /></div> : null}
+      </section>
     </div>
   );
 }

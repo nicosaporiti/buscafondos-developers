@@ -1,5 +1,4 @@
 import { CodeExample } from "./code-example";
-import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { openApiDocument } from "@/lib/openapi/document";
 import { accessLabel, curlExample, groupedOperations, operationAnchor } from "@/lib/openapi/operations";
@@ -36,29 +35,29 @@ export function ApiReference() {
 
   return (
     <div className="api-reference-layout">
-      <nav className="tag-navigation" aria-label="Tags de la API">
-        <span>Tags</span>
+      <nav className="tag-navigation" aria-label="Áreas de la API">
+        <span>Áreas</span>
         {groups.map((group) => <a key={group.tag} href={`#tag-${group.tag.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}>{group.tag}<small>{group.operations.length}</small></a>)}
         <a href="#models">Modelos<small>{Object.keys(models).length}</small></a>
       </nav>
       <div className="reference-content">
         {groups.map((group) => (
           <section className="reference-tag" key={group.tag} id={`tag-${group.tag.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}>
-            <header><span>Tag</span><h2>{group.tag}</h2>{group.description ? <OpenApiMarkdown source={group.description} parentHeadingLevel={2} /> : null}</header>
+            <header><h2>{group.tag}</h2>{group.description ? <OpenApiMarkdown source={group.description} parentHeadingLevel={2} /> : null}</header>
             {group.operations.map((documented) => {
               const { method, path, operation, parameters } = documented;
               const access = accessLabel(path, operation);
               return (
                 <article className="operation" key={`${method}-${path}`} id={operationAnchor(method, path)}>
                   <div className="operation-heading">
-                    <Badge className="method-badge" data-method={method}>{method.toUpperCase()}</Badge>
+                    <span className="method" data-method={method}>{method.toUpperCase()}</span>
                     <code>{path}</code>
-                    <Badge variant={access === "API key" ? "outline" : "secondary"}>{access}</Badge>
+                    <span className="access">{access}</span>
                   </div>
                   <h3>{operation.summary ?? operation.operationId ?? path}</h3>
                   {operation.description ? <OpenApiMarkdown source={operation.description} parentHeadingLevel={3} /> : null}
                   {parameters.length > 0 ? (
-                    <div className="parameter-section"><h4>Parámetros</h4><div className="table-scroll"><table><thead><tr><th>Nombre</th><th>Ubicación</th><th>Tipo</th><th>Descripción</th></tr></thead><tbody>{parameters.map((parameter) => <tr key={`${parameter.in}-${parameter.name}`}><td><code>{parameter.name}</code>{parameter.required ? <small> requerido</small> : null}</td><td>{parameter.in}</td><td><code>{String(parameter.schema?.type ?? (parameter.schema?.$ref ? "schema" : "—"))}</code></td><td>{parameter.description ?? "—"}</td></tr>)}</tbody></table></div></div>
+                    <div className="parameter-section"><h4>Parámetros</h4><div className="table-scroll"><table><thead><tr><th scope="col">Nombre</th><th scope="col">Ubicación</th><th scope="col">Tipo</th><th scope="col">Descripción</th></tr></thead><tbody>{parameters.map((parameter) => <tr key={`${parameter.in}-${parameter.name}`}><td><code>{parameter.name}</code>{parameter.required ? <small>requerido</small> : null}</td><td>{parameter.in}</td><td><code>{String(parameter.schema?.type ?? (parameter.schema?.$ref ? "schema" : "sin tipo"))}</code></td><td>{parameter.description ?? "Sin descripción."}</td></tr>)}</tbody></table></div></div>
                   ) : null}
                   {operation.requestBody ? <RequestBody body={operation.requestBody} /> : null}
                   <CodeExample title="curl" language="bash" code={curlExample(documented)} />
@@ -66,7 +65,7 @@ export function ApiReference() {
                     <Accordion type="multiple">
                       {Object.entries(operation.responses).map(([status, response]) => {
                         const content = firstContent(response);
-                        return <AccordionItem value={status} key={status}><AccordionTrigger headingLevel="h5"><span><Badge variant={status.startsWith("2") ? "secondary" : "outline"}>{status}</Badge> {response.description}</span></AccordionTrigger><AccordionContent>{content ? <><p className="media-type">{content.mediaType}</p>{content.body.example !== undefined ? <CodeExample language="json" title="Ejemplo" code={JSON.stringify(content.body.example, null, 2)} /> : content.body.schema ? <JsonSchema value={content.body.schema} /> : <p>Sin schema declarado.</p>}</> : <p>Sin cuerpo de respuesta declarado.</p>}</AccordionContent></AccordionItem>;
+                        return <AccordionItem value={status} key={status}><AccordionTrigger headingLevel="h5"><span><span className="status-code">{status}</span> {response.description}</span></AccordionTrigger><AccordionContent>{content ? <><p className="media-type">{content.mediaType}</p>{content.body.example !== undefined ? <CodeExample language="json" title="Ejemplo" code={JSON.stringify(content.body.example, null, 2)} /> : content.body.schema ? <JsonSchema value={content.body.schema} /> : <p>Sin schema declarado.</p>}</> : <p>Sin cuerpo de respuesta declarado.</p>}</AccordionContent></AccordionItem>;
                       })}
                     </Accordion>
                   </div>
@@ -75,7 +74,7 @@ export function ApiReference() {
             })}
           </section>
         ))}
-        <section className="reference-tag" id="models"><header><span>Components</span><h2>Modelos</h2><p>Schemas publicados en el snapshot OpenAPI.</p></header>
+        <section className="reference-tag" id="models"><header><h2>Modelos</h2><p>Schemas publicados en el snapshot OpenAPI.</p></header>
           <Accordion type="multiple" className="models-list">{Object.entries(models).map(([name, schema]) => <AccordionItem key={name} value={name}><AccordionTrigger><code>{name}</code></AccordionTrigger><AccordionContent><JsonSchema value={schema} /></AccordionContent></AccordionItem>)}</Accordion>
         </section>
       </div>

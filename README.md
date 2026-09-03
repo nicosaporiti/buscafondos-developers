@@ -68,7 +68,7 @@ npx shadcn@latest info
 npx shadcn@latest add <componente>
 ```
 
-shadcn es la base de primitives, no la identidad visual final. Los tokens en `app/globals.css` reemplazan el tema default con Signal Blue, slate, superficies y estados de BuscaFondos; la tipografía local es IBM Plex Sans + JetBrains Mono. Conserva labels explícitos, foco visible, targets accesibles y los textos en español al agregar componentes.
+shadcn es la base de primitives, no la identidad visual final. El design system sigue la guía de diseño de Vercel, guardada verbatim en `design-system/buscafondos-developers/vercel-design.md` y traducida a este repositorio en `design-system/buscafondos-developers/MASTER.md`: paleta monocroma, Geist Sans y Geist Mono empaquetadas localmente con el paquete `geist`, tipografía por roles, grilla de 12 columnas y superficies sólo cuando aportan significado. Los tokens viven en `app/globals.css`. Conserva labels explícitos, foco visible, targets accesibles y los textos en español al agregar componentes.
 
 ## Estructura
 
@@ -81,7 +81,7 @@ lib/openapi/             Validación, lectura y transformación del contrato
 openapi/                 Snapshot versionado de producción
 scripts/                 Update/validate OpenAPI y scan del bundle
 docs/                    Arquitectura, discrepancias y verificación
-design-system/           Decisiones visuales persistidas
+design-system/           Guía Vercel (vercel-design.md) y su aplicación (MASTER.md)
 ```
 
 ## Deploy en Vercel

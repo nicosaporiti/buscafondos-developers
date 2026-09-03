@@ -1,19 +1,38 @@
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 import { ImageResponse } from "next/og";
+import { openApiDocument } from "@/lib/openapi/document";
 
-export const alt = "BuscaFondos Developers — API de fondos mutuos chilenos";
+export const alt = "BuscaFondos Developers. API de fondos mutuos chilenos.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-export default function OpenGraphImage() {
+const fontsDirectory = path.join(process.cwd(), "node_modules", "geist", "dist", "fonts", "geist-sans");
+
+export default async function OpenGraphImage() {
+  const [regular, semibold] = await Promise.all([
+    readFile(path.join(fontsDirectory, "Geist-Regular.ttf")),
+    readFile(path.join(fontsDirectory, "Geist-SemiBold.ttf")),
+  ]);
+
   return new ImageResponse(
-    <div style={{ alignItems: "center", background: "#0f1c3d", color: "white", display: "flex", height: "100%", justifyContent: "center", position: "relative", width: "100%" }}>
-      <div style={{ backgroundImage: "linear-gradient(#294270 1px, transparent 1px), linear-gradient(90deg, #294270 1px, transparent 1px)", backgroundSize: "52px 52px", inset: 0, opacity: .35, position: "absolute" }} />
-      <div style={{ display: "flex", flexDirection: "column", maxWidth: 960, position: "relative" }}>
-        <div style={{ color: "#8eb1ff", display: "flex", fontSize: 30, fontWeight: 700 }}>BuscaFondos · Developers</div>
-        <div style={{ display: "flex", fontSize: 70, fontWeight: 750, letterSpacing: "-3px", lineHeight: 1.05, marginTop: 28 }}>Datos de fondos mutuos chilenos, listos para construir.</div>
-        <div style={{ color: "#bac8e1", display: "flex", fontSize: 27, marginTop: 30 }}>api.buscafondos.com · OpenAPI 3.1</div>
+    <div style={{ background: "#ffffff", color: "#171717", display: "flex", flexDirection: "column", justifyContent: "space-between", height: "100%", width: "100%", padding: 72, fontFamily: "Geist" }}>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 14, fontSize: 30 }}>
+        <span style={{ fontWeight: 600 }}>BuscaFondos</span>
+        <span style={{ color: "#cccccc" }}>/</span>
+        <span style={{ color: "#666666" }}>Developers</span>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
+        <div style={{ display: "flex", fontSize: 68, fontWeight: 600, letterSpacing: "-2.5px", lineHeight: 1.08, maxWidth: 980 }}>Datos de fondos mutuos chilenos, listos para construir.</div>
+        <div style={{ display: "flex", color: "#666666", fontSize: 28 }}>api.buscafondos.com · OpenAPI {openApiDocument.openapi} · X-Api-Key</div>
       </div>
     </div>,
-    size,
+    {
+      ...size,
+      fonts: [
+        { name: "Geist", data: regular, weight: 400, style: "normal" },
+        { name: "Geist", data: semibold, weight: 600, style: "normal" },
+      ],
+    },
   );
 }

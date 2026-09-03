@@ -31,7 +31,7 @@ Validar estructura completa contra la especificación JSON Schema oficial podrí
 
 shadcn/ui se inicializó con su CLI oficial v4 (`radix-nova`, Radix, Tailwind v4). Se usa como código fuente mantenible para Button, Input, Label, Select, Card, Badge, Dialog/Command, Sheet/Sidebar, Accordion, Tabs y primitives auxiliares.
 
-El tema default fue reemplazado por tokens propios alineados con `agfapp`: Signal Blue `#2563eb`, navy/slate, superficies claras y un dark mode de alto contraste. IBM Plex Sans y JetBrains Mono se empaquetan localmente mediante Fontsource, evitando dependencia de Google Fonts durante el build. La composición evita el aspecto de plantilla: hero técnico, grilla financiera, referencia densa y código estilo terminal.
+El tema default fue reemplazado por tokens monocromos derivados de la guía de diseño de Vercel (`design-system/buscafondos-developers/vercel-design.md`), aplicada en `design-system/buscafondos-developers/MASTER.md`. Geist Sans y Geist Mono se empaquetan localmente con el paquete `geist` sobre `next/font/local`, evitando dependencia de Google Fonts durante el build y manteniendo `font-src 'self'` en la CSP. La composición evita el aspecto de plantilla: apertura guiada por la afirmación con el primer request como evidencia, cifras y tabla de áreas generadas desde el snapshot OpenAPI, referencia separada por reglas en vez de tarjetas y un playground como una sola herramienta.
 
 ## Seguridad
 

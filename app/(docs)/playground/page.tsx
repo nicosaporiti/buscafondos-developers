@@ -20,5 +20,5 @@ function playgroundEndpoints(): readonly PlaygroundEndpoint[] {
 }
 
 export default function PlaygroundPage() {
-  return <><span className="page-kicker">Client-side · GET only</span><h1>Playground</h1><p>Prueba endpoints documentados directamente contra la API. La credencial vive sólo en memoria: no se guarda en cookies, `localStorage`, `sessionStorage`, URLs, analytics ni logs del portal.</p><Playground endpoints={playgroundEndpoints()} /></>;
+  return <><h1>Playground</h1><p>Prueba endpoints GET documentados directamente contra la API desde este navegador. La credencial vive sólo en memoria: no se guarda en cookies, <code>localStorage</code>, <code>sessionStorage</code>, URLs, analytics ni logs del portal.</p><Playground endpoints={playgroundEndpoints()} /></>;
 }

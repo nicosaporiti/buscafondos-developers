@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { documentationNavigation } from "@/lib/navigation";
+import { openApiDocument } from "@/lib/openapi/document";
 import {
   Sidebar,
   SidebarContent,
@@ -27,7 +28,7 @@ export function DocsSidebar() {
       <Sidebar collapsible="offcanvas" className="docs-sidebar">
         <SidebarContent>
           <SidebarGroup>
-            <SidebarGroupLabel>Guías</SidebarGroupLabel>
+            <SidebarGroupLabel>Documentación</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {documentationNavigation.map((item) => (
@@ -41,7 +42,7 @@ export function DocsSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
-        <SidebarFooter><div className="sidebar-version"><span>Contrato API</span><strong>OpenAPI 1.0.0</strong></div></SidebarFooter>
+        <SidebarFooter><div className="sidebar-version"><span>Contrato</span><strong>OpenAPI {openApiDocument.openapi} · v{openApiDocument.info.version}</strong></div></SidebarFooter>
       </Sidebar>
     </>
   );
