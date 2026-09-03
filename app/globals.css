@@ -313,6 +313,19 @@
 .steps li p { color: var(--text-secondary); font-size: var(--type-compact); line-height: var(--leading-compact); }
 .steps li .link-arrow { align-self: end; margin-top: var(--space-2); }
 
+.home-use-cases { row-gap: var(--space-8); align-items: start; }
+.use-cases-intro { display: grid; gap: var(--space-4); max-width: 34ch; }
+.use-cases-intro p { color: var(--text-secondary); }
+.use-cases-intro .actions { margin-top: var(--space-2); }
+.use-cases { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-8) var(--space-6); margin: 0; padding: 0; list-style: none; }
+.use-cases li { display: grid; gap: var(--space-2); min-width: 0; border-top: 1px solid var(--border); padding-top: var(--space-4); }
+.use-case-audience { color: var(--text-tertiary); font-size: var(--type-label); line-height: var(--leading-caption); }
+.use-cases li > p:not(.use-case-audience, .use-case-paths) { color: var(--text-secondary); font-size: var(--type-compact); line-height: var(--leading-compact); }
+.use-case-paths { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); margin-top: var(--space-1); }
+.use-case-paths a { color: var(--foreground); text-decoration: none; }
+.use-case-paths a:hover { text-decoration: underline; }
+.use-case-paths code { font-size: var(--type-label); }
+
 .home-closing { padding-block: var(--space-16) 0; }
 .home-closing .stack { gap: var(--space-4); }
 .home-closing .actions { margin-top: var(--space-2); }
@@ -493,6 +506,7 @@
   .home-opening { padding-block: var(--space-12) var(--space-10); }
   .stat-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .steps { grid-template-columns: 1fr; gap: var(--space-6); }
+  .use-cases-intro { max-width: var(--measure); }
 }
 @media (max-width: 900px) {
   :root { --nav-height: 56px; --page-padding: var(--space-4); }
@@ -515,6 +529,7 @@
   .wordmark span[aria-hidden] { display: none; }
   .actions [data-slot=button] { width: 100%; }
   .stat-strip { grid-template-columns: 1fr; gap: var(--space-4); }
+  .use-cases { grid-template-columns: 1fr; gap: var(--space-6); }
   .prose { padding: var(--space-8) var(--space-4) var(--space-12); }
   .prose > h1 + p { margin-bottom: var(--space-8); }
   .prose h2 { margin-top: var(--space-10); }

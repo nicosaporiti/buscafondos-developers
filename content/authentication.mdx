@@ -3,42 +3,42 @@ import { Callout } from "@/components/callout"
 
 # Autenticación
 
-Los endpoints de datos requieren una API key vigente. La política del middleware falla cerrada: si no puede validar la key, la API responde `503` en vez de permitir la llamada.
+Los endpoints de datos requieren una API key vigente. El middleware falla cerrado: si no puede validar la key, responde `503` en lugar de dejar pasar el request.
 
-## Header recomendado
+## Header `X-Api-Key`
 
 <CodeExample title="X-Api-Key" language="http" code={`GET /api/all-funds HTTP/1.1
 Host: api.buscafondos.com
 X-Api-Key: bf_tu_key`} />
 
-`X-Api-Key` es el esquema descrito en OpenAPI y la forma recomendada en el backend.
+`X-Api-Key` es el único security scheme declarado en OpenAPI y el mecanismo recomendado.
 
-## Alternativa Bearer
+## Alternativa: `Authorization: Bearer`
 
-El middleware actual también acepta `Authorization: Bearer` cuando el token comienza con `bf_`.
+El middleware también acepta `Authorization: Bearer` cuando el token comienza con `bf_`.
 
 <CodeExample title="Authorization" language="http" code={`Authorization: Bearer bf_tu_key`} />
 
-<Callout title="Discrepancia documentada">Bearer está admitido por el código y la política de uso, pero el snapshot OpenAPI publica únicamente el security scheme `X-Api-Key`. Los generadores de SDK verán sólo el header recomendado.</Callout>
+<Callout title="Discrepancia con OpenAPI">Bearer está implementado en el backend y descrito en la política de uso, pero el snapshot OpenAPI publica solo el security scheme `X-Api-Key`. Los generadores de SDK verán únicamente ese header.</Callout>
 
 ## Verificar key, cuota y consumo
 
-Consulta `GET /api/key/info`. La respuesta incluye nombre, tier, `daily_quota`, `quota_enforced`, fecha de creación y `requests_today`. El backend aplica `Cache-Control: no-store` y este endpoint no consume cuota diaria.
+`GET /api/key/info` devuelve nombre, tier, `daily_quota`, `quota_enforced`, fecha de creación y `requests_today`. La respuesta lleva `Cache-Control: no-store` y la llamada no descuenta cuota.
 
 ## Backend frente a navegador
 
 | Desde backend | Desde navegador |
 | --- | --- |
-| Recomendado para producción. | Útil para pruebas manuales acotadas. |
-| Guarda la key en un secret manager o variable privada. | Cualquier persona puede inspeccionar el bundle, requests y memoria del tab. |
+| Uso recomendado en producción. | Solo para pruebas manuales acotadas. |
+| La key se lee desde un secret manager o una variable de entorno privada. | Cualquier persona puede inspeccionar el bundle, los requests y la memoria del tab. |
 | Permite controlar usuarios, caché y retry. | No incrustes la key en JavaScript ni en variables `NEXT_PUBLIC_*`. |
 
-El [playground](/playground) envía la key directamente desde tu tab a `api.buscafondos.com`, sólo en el header, y la mantiene en memoria hasta que la limpias o cierras/recargas la página. El portal no recibe la credencial.
+El [playground](/playground) envía la key desde el tab a `api.buscafondos.com`, solo en el header, y la mantiene en memoria hasta que la limpias o cierras la página. El portal no recibe la credencial.
 
-## Buenas prácticas
+## Manejo de la key
 
-- Nunca envíes keys en query strings: pueden terminar en URLs, logs y `Referer`.
-- No registres headers completos en observabilidad o reportes de errores.
-- Usa un `User-Agent` descriptivo para clientes automatizados.
-- Si pierdes una key gratuita, repite el registro con el mismo email; la anterior se revoca.
-- Trata la key como un secreto aunque los datos consultados sean públicos.
+- No la envíes en query strings: termina en URLs, logs y `Referer`.
+- No registres headers completos en observabilidad ni en reportes de errores.
+- Usa un `User-Agent` descriptivo en clientes automatizados.
+- Si pierdes una key gratuita, repite el registro con el mismo email; la anterior queda revocada.
+- Trátala como secreto aunque los datos consultados sean públicos.

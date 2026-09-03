@@ -1,22 +1,22 @@
 import { CodeExample } from "@/components/code-example"
 import { Callout } from "@/components/callout"
 
-# Haz tu primer request
+# Primer request
 
-Desde obtener una key hasta leer datos de producción en menos de cinco minutos.
+Registro, verificación de la key y primera consulta a un endpoint de datos.
 
-## 1. Obtén y guarda tu API key
+## 1. Obtén la API key
 
-Solicita una key gratuita en [api.buscafondos.com/register](https://api.buscafondos.com/register). Después de verificar tu email, la key se muestra **una sola vez**. Guárdala en el gestor de secretos de tu entorno.
+Solicita una key gratuita en [api.buscafondos.com/register](https://api.buscafondos.com/register). Tras verificar el email, la key se muestra **una sola vez**; el backend conserva únicamente su hash. Guárdala en el gestor de secretos de tu entorno.
 
-<Callout title="No la pegues en el código fuente" tone="warning">Usa una variable de entorno sólo del servidor. No la expongas en variables públicas, repositorios ni capturas.</Callout>
+<Callout title="No la incluyas en el código fuente" tone="warning">Léela desde una variable de entorno del servidor. No la expongas en variables públicas del bundle, repositorios ni capturas de pantalla.</Callout>
 
 ## 2. Verifica la key
 
 <CodeExample title="curl" language="bash" code={`curl https://api.buscafondos.com/api/key/info \\
   -H "X-Api-Key: $BUSCAFONDOS_API_KEY"`} />
 
-`/api/key/info` confirma el tier, la cuota diaria y el consumo del día. Esta verificación no descuenta cuota.
+`/api/key/info` devuelve tier, cuota diaria y consumo del día. Esta llamada no descuenta cuota.
 
 ## 3. Consulta fondos
 
@@ -43,9 +43,9 @@ response = requests.get(
 response.raise_for_status()
 payload = response.json()`} />
 
-## Respuesta real de producción
+## Comprobar conectividad sin key
 
-El endpoint público `/health` devolvió esta respuesta el **26 de agosto de 2026**. Sirve para comprobar conectividad sin enviar una key.
+`GET /health` es el único endpoint público. Respuesta capturada el 26 de agosto de 2026:
 
 <CodeExample title="GET /health · 200 OK" language="json" code={`{
   "status": "ok",
@@ -53,11 +53,11 @@ El endpoint público `/health` devolvió esta respuesta el **26 de agosto de 202
   "total_records": 4913905
 }`} />
 
-Los ejemplos de datos de fondos en la [referencia API](/reference) provienen del snapshot OpenAPI del backend y se actualizan con él.
+Los ejemplos de respuesta de la [referencia API](/reference) provienen del snapshot OpenAPI del backend y se actualizan con él.
 
-## Próximos pasos
+## Siguientes pasos
 
-- Revisa [autenticación](/authentication) antes de integrar la key.
-- Implementa manejo de [cuotas y errores](/quotas-errors).
-- Explora parámetros y respuestas en la [referencia](/reference).
-- Prueba un GET desde tu navegador en el [playground](/playground).
+- [Autenticación](/authentication): header `X-Api-Key`, alternativa Bearer y manejo de la key.
+- [Cuotas y errores](/quotas-errors): headers de cuota, códigos de estado y retry.
+- [Referencia](/reference): parámetros, respuestas y modelos de cada operación.
+- [Playground](/playground): requests GET desde el navegador.

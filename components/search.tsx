@@ -30,7 +30,7 @@ export function Search() {
       <CommandDialog open={open} onOpenChange={setOpen} title="Buscar documentación" description="Busca una guía o sección de la referencia" className="search-dialog">
         <CommandInput placeholder="Buscar guía o referencia…" aria-label="Buscar documentación" />
         <CommandList>
-          <CommandEmpty>No encontramos resultados.</CommandEmpty>
+          <CommandEmpty>Sin resultados.</CommandEmpty>
           <CommandGroup heading="Documentación">
             {documentationNavigation.map((item) => (
               <CommandItem key={item.href} value={`${item.label} ${item.description}`} onSelect={() => { setOpen(false); router.push(item.href); }}>

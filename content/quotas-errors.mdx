@@ -3,7 +3,7 @@ import { Callout } from "@/components/callout"
 
 # Cuotas y errores
 
-Cada key puede tener una cuota diaria que se reinicia a medianoche en `America/Santiago`. Además, la política pública limita tráfico por IP a 10 requests por segundo, con ráfagas de hasta 20.
+Cada key puede tener una cuota diaria que se reinicia a medianoche en `America/Santiago`. Además, la política de uso limita el tráfico por IP a 10 requests por segundo, con ráfagas de hasta 20.
 
 ## Headers de cuota
 
@@ -12,18 +12,18 @@ Cada key puede tener una cuota diaria que se reinicia a medianoche en `America/S
 | `X-RateLimit-Limit` | Cuota diaria asignada a la key. |
 | `X-RateLimit-Remaining` | Requests disponibles después de la llamada. |
 | `X-RateLimit-Reset` | Timestamp Unix del próximo reinicio. |
-| `Retry-After` | Segundos que conviene esperar; aparece en `429` y algunos `503`. |
+| `Retry-After` | Segundos a esperar antes de reintentar. Aparece en `429` y en algunos `503`. |
 
-Los headers se exponen por CORS, por lo que clientes de navegador pueden leerlos.
+Los cuatro headers están expuestos vía CORS, así que también son legibles desde el navegador.
 
-## Comportamiento HTTP real
+## Códigos de estado del middleware
 
 - `401 Unauthorized`: falta la key, es inválida o fue revocada. Incluye `WWW-Authenticate: Bearer`.
-- `403 Forbidden`: **no forma parte del flujo de API key de los endpoints de datos**. Actualmente aparece en superficies de cuenta cuando el origen no es confiable; no lo uses para inferir cuota.
-- `429 Too Many Requests`: cuota diaria agotada o exceso de tasa. Cuando se agota la cuota incluye los cuatro headers anteriores.
-- `5xx`: falla transitoria o datos actualizándose. La validación de keys y algunos resúmenes pueden responder `503` con `Retry-After: 5`.
+- `403 Forbidden`: no forma parte del flujo de API key en los endpoints de datos. Hoy solo aparece en las rutas de cuenta cuando el origen no es confiable. No lo interpretes como cuota agotada.
+- `429 Too Many Requests`: cuota diaria agotada o exceso de tasa. Cuando se agota la cuota, incluye los cuatro headers anteriores.
+- `5xx`: falla transitoria o datos en actualización. La validación de keys y algunos resúmenes pueden responder `503` con `Retry-After: 5`.
 
-<Callout title="Fuente de verdad">El OpenAPI actual no enumera globalmente todas estas respuestas del middleware. Este comportamiento fue confirmado en `app/apikeys.py` y `app/main.py`; la referencia generada conserva exactamente lo que declara OpenAPI.</Callout>
+<Callout title="Origen de esta información">El snapshot OpenAPI no declara estas respuestas del middleware en cada operación. El comportamiento descrito fue verificado en el código del backend (`app/apikeys.py`, `app/main.py`). La referencia generada muestra únicamente lo que declara OpenAPI.</Callout>
 
 ## Retry con backoff y jitter
 
@@ -53,4 +53,4 @@ Los headers se exponen por CORS, por lo que clientes de navegador pueden leerlos
   throw new Error("BuscaFondos no respondió después de 4 intentos");
 }`} />
 
-No reintentes `401` ni `403`. Corrige autenticación o permisos primero. Lee la [política de uso completa](https://api.buscafondos.com/policy) antes de automatizar cargas grandes.
+No reintentes `401` ni `403`: corrige la autenticación primero. Antes de automatizar cargas grandes, lee la [política de uso](https://api.buscafondos.com/policy).

@@ -20,7 +20,7 @@ Fecha: 2 de septiembre de 2026 (rediseño con la guía de Vercel).
 - distinción entre `/health` público y endpoints con `X-Api-Key`;
 - render de tags, endpoint y modelos reales de la referencia;
 - construcción de URLs y encoding del playground;
-- key sólo en header, nunca URL/storage, y limpieza explícita.
+- key solo en header, nunca en URL ni storage, y limpieza explícita;
 - curl generado según método y body;
 - renderizado de `requestBody` y query params requeridos;
 - estado pendiente y `CopyButton`;
@@ -30,7 +30,7 @@ Fecha: 2 de septiembre de 2026 (rediseño con la guía de Vercel).
 
 ## Visual
 
-Revisión real del build de producción con Chrome:
+Revisión manual del build de producción en Chrome:
 
 - desktop: home, quickstart, referencia y playground a 1440 px, sin overflow horizontal;
 - móvil: home, quickstart, referencia y playground a 390 px, sin overflow horizontal;
@@ -38,8 +38,8 @@ Revisión real del build de producción con Chrome:
 - sidebar trigger móvil expuesto como `Abrir navegación de documentación`;
 - input de API key con label visible en el playground;
 - tema claro y oscuro verificados;
-- consola del home sin warnings ni errores.
-- verificación responsive ejecutada en este ciclo a 768 y 901 px.
+- consola del home sin warnings ni errores;
+- breakpoints intermedios revisados a 768 y 901 px.
 
 Capturas:
 

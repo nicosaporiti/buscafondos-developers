@@ -3,7 +3,7 @@ import path from "node:path";
 import { ImageResponse } from "next/og";
 import { openApiDocument } from "@/lib/openapi/document";
 
-export const alt = "BuscaFondos Developers. API de fondos mutuos chilenos.";
+export const alt = "BuscaFondos Developers: API de fondos mutuos chilenos con datos públicos de la CMF.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -23,7 +23,7 @@ export default async function OpenGraphImage() {
         <span style={{ color: "#666666" }}>Developers</span>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
-        <div style={{ display: "flex", fontSize: 68, fontWeight: 600, letterSpacing: "-2.5px", lineHeight: 1.08, maxWidth: 980 }}>Datos de fondos mutuos chilenos, listos para construir.</div>
+        <div style={{ display: "flex", fontSize: 68, fontWeight: 600, letterSpacing: "-2.5px", lineHeight: 1.08, maxWidth: 980 }}>API de fondos mutuos chilenos.</div>
         <div style={{ display: "flex", color: "#666666", fontSize: 28 }}>api.buscafondos.com · OpenAPI {openApiDocument.openapi} · X-Api-Key</div>
       </div>
     </div>,
