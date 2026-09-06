@@ -1,10 +1,10 @@
 # Discrepancias observadas
 
-Inspección realizada el 26 de agosto de 2026. Cuando hay diferencias, el snapshot OpenAPI de producción y el comportamiento observado de la API prevalecen.
+Inspección inicial el 26 de agosto de 2026; snapshot actualizado el 6 de septiembre de 2026. Cuando hay diferencias, el snapshot OpenAPI de producción y el comportamiento observado de la API prevalecen.
 
 ## Inventario escrito rezagado
 
-El inventario narrativo previo enumera 13 endpoints GET. El snapshot descargado contiene 31 rutas y 33 operaciones. Entre las operaciones presentes en OpenAPI pero ausentes de ese inventario están:
+El inventario narrativo previo enumera 13 endpoints GET. El snapshot del 6 de septiembre de 2026 contiene 34 rutas y 36 operaciones (el del 26 de agosto tenía 31 y 33). Entre las operaciones presentes en OpenAPI pero ausentes de ese inventario están:
 
 - `GET /api/real_assets/{asset_id}/expense_ratio/history`
 - `GET /api/market-summary`
@@ -14,6 +14,7 @@ El inventario narrativo previo enumera 13 endpoints GET. El snapshot descargado 
 - `GET /api/reports/tac-changes`
 - `GET /api/key/info`
 - rutas de cuenta bajo `/api/auth`, `/api/me` y `/api/alerts`
+- desde el 6 de septiembre de 2026: `GET /api/real_assets/{asset_id}/returns`, `GET /api/compare` y `GET /api/screener`
 
 El inventario narrativo por sí solo no representa el contrato completo; el snapshot OpenAPI es la fuente de verdad.
 
@@ -32,3 +33,11 @@ Varias respuestas declaran `schema: {}` aunque incluyen ejemplos. La referencia 
 ## OpenAPI solo representa X-Api-Key
 
 Las operaciones de cuenta no llevan `X-Api-Key` porque usan su propio contrato (cookie/sesión). El playground las excluye; ofrece solo `/health` y los GET protegidos por el esquema de API pública.
+
+## Tag `Reports` no declarado
+
+`GET /api/reports/tac-changes` lleva el tag `Reports`, que la lista `tags` del documento no incluye. `groupedOperations` conserva la operación y agrupa los tags no declarados después de los declarados, sin descripción; el home muestra "Sin descripción en el contrato." para esa área. `Fund Returns` tuvo el mismo problema en la primera publicación del 6 de septiembre de 2026 y el backend lo corrigió el mismo día.
+
+## Respuestas `503` declaradas parcialmente
+
+`GET /api/all-funds`, `GET /api/real_assets/{asset_id}/returns`, `GET /api/compare` y `GET /api/screener` declaran `503`; el resto de las operaciones protegidas siguen sin declararlo aunque el middleware puede producirlo. La guía de cuotas describe el comportamiento general.

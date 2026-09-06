@@ -326,6 +326,10 @@
 .use-case-paths a:hover { text-decoration: underline; }
 .use-case-paths code { font-size: var(--type-label); }
 
+.parameter-options, .parameter-default { display: block; margin-top: var(--space-1); color: var(--text-secondary); font-size: var(--type-label); line-height: var(--leading-caption); }
+.parameter-options { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+.parameter-options code { font-size: inherit; }
+
 .home-closing { padding-block: var(--space-16) 0; }
 .home-closing .stack { gap: var(--space-4); }
 .home-closing .actions { margin-top: var(--space-2); }

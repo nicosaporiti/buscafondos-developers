@@ -1,9 +1,21 @@
 import type { Metadata } from "next";
-import { Playground, type PlaygroundEndpoint } from "@/components/playground";
+import { Playground, type PlaygroundEndpoint, type PlaygroundParameter } from "@/components/playground";
 import { openApiDocument } from "@/lib/openapi/document";
-import { isApiKeyProtected, listOperations } from "@/lib/openapi/operations";
+import { isApiKeyProtected, isNumericParameter, listOperations, parameterDefault, parameterOptions } from "@/lib/openapi/operations";
+import type { OpenApiParameter } from "@/lib/openapi/schema";
 
 export const metadata: Metadata = { title: "Playground", description: "Requests GET a la API de BuscaFondos desde el navegador. La key no pasa por el portal.", alternates: { canonical: "/playground" }, robots: { index: false, follow: false } };
+
+function playgroundParameter(parameter: OpenApiParameter, required: boolean): PlaygroundParameter {
+  return {
+    name: parameter.name,
+    required,
+    description: parameter.description,
+    options: parameterOptions(parameter.schema, openApiDocument),
+    defaultValue: parameterDefault(parameter.schema),
+    numeric: isNumericParameter(parameter.schema),
+  };
+}
 
 function playgroundEndpoints(): readonly PlaygroundEndpoint[] {
   return listOperations(openApiDocument).filter((item) => item.method === "get" && (item.path === "/health" || isApiKeyProtected(item.operation))).toSorted((left, right) => {
@@ -14,8 +26,8 @@ function playgroundEndpoints(): readonly PlaygroundEndpoint[] {
     path: item.path,
     summary: item.operation.summary ?? item.path,
     protected: isApiKeyProtected(item.operation),
-    pathParameters: item.parameters.filter((parameter) => parameter.in === "path").map((parameter) => ({ name: parameter.name, required: parameter.required ?? true })),
-    queryParameters: item.parameters.filter((parameter) => parameter.in === "query").map((parameter) => ({ name: parameter.name, required: parameter.required ?? false })),
+    pathParameters: item.parameters.filter((parameter) => parameter.in === "path").map((parameter) => playgroundParameter(parameter, parameter.required ?? true)),
+    queryParameters: item.parameters.filter((parameter) => parameter.in === "query").map((parameter) => playgroundParameter(parameter, parameter.required ?? false)),
   }));
 }
 

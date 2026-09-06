@@ -29,8 +29,8 @@ const useCases = [
   {
     audience: "Asesores de inversión",
     title: "Selección y comparación de fondos",
-    text: "TAC por serie y su historial mensual, benchmark comparable por familia y declaración del artículo 107 para justificar una recomendación.",
-    paths: ["/api/real_assets/{asset_id}/expense_ratio", "/api/benchmarks", "/api/funds/{run}/article107"],
+    text: "Screener del universo publicado, comparación de hasta diez series en un mismo corte, rentabilidades por ventana, TAC y declaración del artículo 107 para justificar una recomendación.",
+    paths: ["/api/screener", "/api/compare", "/api/real_assets/{asset_id}/returns", "/api/real_assets/{asset_id}/expense_ratio", "/api/funds/{run}/article107"],
   },
   {
     audience: "Investigación y reportes",

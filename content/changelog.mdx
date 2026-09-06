@@ -1,15 +1,32 @@
 # Changelog
 
-Cambios públicos del portal y del contrato de la API. El registro comienza con la publicación del portal; no hay entradas anteriores.
+Cambios públicos del portal y del contrato de la API. Cada entrada indica fecha efectiva, endpoints o modelos afectados, compatibilidad hacia atrás, acción requerida y enlace a la referencia actualizada.
 
-## Sin entradas
+## 2026-09-06: Rentabilidades, comparador y screener
 
-Todavía no se ha publicado ningún cambio que afecte a los consumidores de la API.
+**Impacto:** aditivo. Ningún endpoint existente cambia de forma incompatible. **Acción requerida:** ninguna.
 
-Cada entrada futura indica:
+### Endpoints nuevos
 
-- fecha efectiva;
-- endpoints o modelos afectados;
-- compatibilidad hacia atrás;
-- acción requerida, si existe;
-- enlace a la referencia actualizada.
+Los tres requieren `X-Api-Key` y están disponibles en el [playground](/playground).
+
+- [`GET /api/real_assets/{asset_id}/returns`](/reference#get-api-real-assets-asset-id-returns): rentabilidades de una serie en ocho ventanas (`1m`, `3m`, `6m`, `1y`, `ytd`, `3y_ann`, `5y_ann`, `last_closed_month`), en fracción decimal, con fecha de corte y motivo cuando una ventana no está disponible. `valuation` acepta `accounting` (por defecto), `clp` o `real_uf`; `return_basis` acepta `price` (por defecto) o `total`. Las bases ajustadas responden `503` mientras no estén habilitadas.
+- [`GET /api/compare`](/reference#get-api-compare): compara entre una y diez series del último lote publicado, conservando el orden solicitado. `series` recibe IDs decimales de serie separados por comas. Entrega retornos de precio en moneda contable, datos del catálogo y esferas CMF, con comparabilidad por período y de esferas informadas por separado. Responde `404` si un ID no pertenece al universo publicado y `422` si la lista es inválida, tiene duplicados o supera diez series.
+- [`GET /api/screener`](/reference#get-api-screener): filtra el último lote publicado por nombre o RUN, familia, clase de inversionista, moneda, categoría, administradora, rango de esferas CMF y familia o tipo de inversionista CMF. `sort` admite `id`, `tac`, `cmf_spheres` y las ocho ventanas de rentabilidad; ordenar por retorno requiere `currency` y ordenar por esferas requiere `cmf_family` y `cmf_investor_type`. Pagina con `limit` (1 a 200) y `offset`; el paginado es estable dentro del mismo lote.
+
+### Endpoints modificados
+
+- [`GET /api/all-funds`](/reference#get-api-all-funds): declara la respuesta `503` que ya producía cuando la base cambia entre dos lecturas consecutivas. Reintenta respetando `Retry-After`. Su descripción ahora explica que coalesce misses por respuesta efectiva.
+
+### Modelos
+
+- Nuevos: `FundReturnResponse`, `AdjustedReturnResponse`, `TotalReturnResponse` y sus recursos, atributos y ventanas (`ReturnPeriods`, `ReturnPeriod`, `CmfSpheres`, `AppliedDistribution`, `AppliedExchange`, `FactorCoverage`, `EndpointInputs`, `IndicatorInput`, `PeriodInputs`, entre otros).
+- Nuevos para el comparador y el screener: `CompareResponse`, `CompareMeta`, `ScreenerResponse`, `ScreenerMeta`, `ReturnAttributes`, `MarketAttributes`, `MarketResource`, `PeriodComparability`, `ReturnComparability` y `SpheresComparability`.
+- `Article107EvidenceResponse` agrega el campo requerido `seriesException`.
+- `AlertPreferenceRequest` (rutas de cuenta, fuera de la API pública): `email_opt_in_alerts` pasa a ser opcional y nullable, y se agrega `email_opt_in_monthly_summary`.
+- `info.contact` del contrato apunta a `api@buscafondos.com`.
+
+### Notas del contrato
+
+- `/api/compare` y `/api/screener` pertenecen al área nueva `Fund Returns`, declarada en el contrato con su descripción. Ambos declaran `503` cuando el lote publicado no existe o es inválido; reintenta respetando `Retry-After`.
+- El comparador no incluye historia diaria y el screener no incluye metadatos de comparabilidad. Las esferas CMF no equivalen a rentabilidad ajustada por riesgo.

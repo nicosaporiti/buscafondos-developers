@@ -1,17 +1,17 @@
 # Verificación
 
-Fecha: 2 de septiembre de 2026 (rediseño con la guía de Vercel).
+Fecha: 6 de septiembre de 2026 (actualización del snapshot OpenAPI: rentabilidades, comparador y screener).
 
 ## Automatizada
 
 | Comando | Resultado |
 | --- | --- |
-| `npm run openapi:validate` | PASS — 31 rutas, 33 operaciones |
+| `npm run openapi:validate` | PASS — 34 rutas, 36 operaciones |
 | `npm run lint` | PASS — sin warnings |
 | `npm run typecheck` | PASS — TypeScript strict |
-| `npm test` | PASS — 10 archivos, 29 pruebas |
+| `npm test` | PASS — 10 archivos, 38 pruebas |
 | `npm run build` | PASS — 13 rutas listadas como `○ Static`; 14 páginas estáticas generadas; fuentes Geist self-hosted |
-| `npm run check:bundle-secrets` | PASS — 394 artefactos revisados, sin patrones de API key |
+| `npm run check:bundle-secrets` | PASS — 456 artefactos revisados, sin patrones de API key |
 
 ## Cobertura de pruebas
 
@@ -23,6 +23,8 @@ Fecha: 2 de septiembre de 2026 (rediseño con la guía de Vercel).
 - key solo en header, nunca en URL ni storage, y limpieza explícita;
 - curl generado según método y body;
 - renderizado de `requestBody` y query params requeridos;
+- presencia de `/api/real_assets/{asset_id}/returns`, `/api/compare` y `/api/screener` con `X-Api-Key`, orden del tag declarado `Fund Returns` y conservación del tag no declarado `Reports`;
+- tipos de parámetro resueltos (`string | null`, `$ref`), enums, defaults y hint numérico en referencia y playground;
 - estado pendiente y `CopyButton`;
 - esquema de seguridad, headings y breakpoint responsive;
 - CSP con `unsafe-eval` limitada al entorno de desarrollo;

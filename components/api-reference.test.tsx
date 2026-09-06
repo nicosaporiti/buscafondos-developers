@@ -11,6 +11,24 @@ describe("API reference rendering", () => {
     expect(screen.getByText("Article107DetailResponse")).toBeInTheDocument();
   });
 
+  it("renders the returns, compare and screener endpoints with resolved parameter types", () => {
+    render(<ApiReference />);
+    expect(screen.getAllByText("Fund Returns").length).toBeGreaterThan(0);
+    const headingPath = (path: string) => screen.getAllByText(path).find((element) => element.closest(".operation-heading"));
+    expect(headingPath("/api/compare")).toBeDefined();
+    expect(headingPath("/api/screener")).toBeDefined();
+    expect(screen.getAllByRole("heading", { name: "Comparar hasta diez series al corte publicado", level: 3 })).not.toHaveLength(0);
+    expect(screen.getAllByText(/Entre uno y diez IDs decimales de serie/)).not.toHaveLength(0);
+
+    const returnsOperation = headingPath("/api/real_assets/{asset_id}/returns")?.closest("article");
+    if (!returnsOperation) throw new Error("Missing expected GET /api/real_assets/{asset_id}/returns operation");
+    const returns = within(returnsOperation);
+    expect(returns.getByText("string | null")).toBeInTheDocument();
+    expect(returns.getByText("real_uf")).toBeInTheDocument();
+    expect(returns.getAllByText(/Por defecto:/).map((element) => element.textContent)).toEqual(["Por defecto: accounting", "Por defecto: price"]);
+    expect(returns.getByRole("heading", { name: "503 Lote no disponible o base ajustada aún no habilitada", level: 5 })).toBeInTheDocument();
+  });
+
   it("renders request body details from the real OpenAPI snapshot", () => {
     render(<ApiReference />);
     const watchlistEndpoint = screen.getAllByText("/api/me/watchlist").find((element) => element.closest("article")?.querySelector('[data-method="post"]'));

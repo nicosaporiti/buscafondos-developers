@@ -1,8 +1,8 @@
 import { CodeExample } from "./code-example";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { openApiDocument } from "@/lib/openapi/document";
-import { accessLabel, curlExample, groupedOperations, operationAnchor } from "@/lib/openapi/operations";
-import type { OpenApiOperation } from "@/lib/openapi/schema";
+import { accessLabel, curlExample, groupedOperations, operationAnchor, parameterDefault, parameterOptions, parameterType } from "@/lib/openapi/operations";
+import type { OpenApiOperation, OpenApiParameter } from "@/lib/openapi/schema";
 import { OpenApiMarkdown } from "./openapi-markdown";
 
 function JsonSchema({ value }: { readonly value: unknown }) {
@@ -26,6 +26,19 @@ function RequestBody({ body }: { readonly body: NonNullable<OpenApiOperation["re
         </div>
       ))}
     </div>
+  );
+}
+
+function ParameterRow({ parameter }: { readonly parameter: OpenApiParameter }) {
+  const options = parameterOptions(parameter.schema, openApiDocument);
+  const defaultValue = parameterDefault(parameter.schema);
+  return (
+    <tr>
+      <td><code>{parameter.name}</code>{parameter.required ? <small>requerido</small> : null}</td>
+      <td>{parameter.in}</td>
+      <td><code>{parameterType(parameter.schema)}</code>{options ? <small className="parameter-options">{options.map((option) => <code key={option}>{option}</code>)}</small> : null}</td>
+      <td>{parameter.description ?? "Sin descripción."}{defaultValue !== undefined ? <small className="parameter-default">Por defecto: <code>{defaultValue}</code></small> : null}</td>
+    </tr>
   );
 }
 
@@ -57,7 +70,7 @@ export function ApiReference() {
                   <h3>{operation.summary ?? operation.operationId ?? path}</h3>
                   {operation.description ? <OpenApiMarkdown source={operation.description} parentHeadingLevel={3} /> : null}
                   {parameters.length > 0 ? (
-                    <div className="parameter-section"><h4>Parámetros</h4><div className="table-scroll"><table><thead><tr><th scope="col">Nombre</th><th scope="col">Ubicación</th><th scope="col">Tipo</th><th scope="col">Descripción</th></tr></thead><tbody>{parameters.map((parameter) => <tr key={`${parameter.in}-${parameter.name}`}><td><code>{parameter.name}</code>{parameter.required ? <small>requerido</small> : null}</td><td>{parameter.in}</td><td><code>{String(parameter.schema?.type ?? (parameter.schema?.$ref ? "schema" : "sin tipo"))}</code></td><td>{parameter.description ?? "Sin descripción."}</td></tr>)}</tbody></table></div></div>
+                    <div className="parameter-section"><h4>Parámetros</h4><div className="table-scroll"><table><thead><tr><th scope="col">Nombre</th><th scope="col">Ubicación</th><th scope="col">Tipo</th><th scope="col">Descripción</th></tr></thead><tbody>{parameters.map((parameter) => <ParameterRow key={`${parameter.in}-${parameter.name}`} parameter={parameter} />)}</tbody></table></div></div>
                   ) : null}
                   {operation.requestBody ? <RequestBody body={operation.requestBody} /> : null}
                   <CodeExample title="curl" language="bash" code={curlExample(documented)} />

@@ -8,7 +8,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { CodeExample } from "./code-example";
 import { KeyIcon } from "./icons";
 
-export type PlaygroundParameter = Readonly<{ name: string; required: boolean }>;
+export type PlaygroundParameter = Readonly<{
+  name: string;
+  required: boolean;
+  /** Contract description, shown as help text under the field. */
+  description?: string;
+  /** Allowed values from an enum; rendered as a select instead of a free text input. */
+  options?: readonly string[];
+  /** Default declared by the contract; shown as placeholder and never sent explicitly. */
+  defaultValue?: string;
+  /** Numeric parameter (integer or number); sets the mobile keyboard hint. */
+  numeric?: boolean;
+}>;
 export type PlaygroundEndpoint = Readonly<{
   id: string;
   path: string;
@@ -42,6 +53,43 @@ const RELEVANT_HEADERS = ["content-type", "x-ratelimit-limit", "x-ratelimit-rema
 
 function isRequiredParameterMissing(parameter: PlaygroundParameter, values: Readonly<Record<string, string>>): boolean {
   return parameter.required && !values[parameter.name]?.trim();
+}
+
+/** Sentinel for the "unset" select item: Radix Select forbids an empty string value. */
+const UNSET_OPTION = "__unset__";
+
+type ParameterFieldProps = Readonly<{
+  location: "path" | "query";
+  parameter: PlaygroundParameter;
+  value: string;
+  onChange: (value: string) => void;
+  disabled: boolean;
+}>;
+
+function ParameterField({ location, parameter, value, onChange, disabled }: ParameterFieldProps) {
+  const id = `${location}-${parameter.name}`;
+  const descriptionId = `${id}-description`;
+  const missing = isRequiredParameterMissing(parameter, { [parameter.name]: value });
+  const describedBy = [parameter.description || parameter.defaultValue !== undefined ? descriptionId : undefined, missing ? "playground-required-parameters" : undefined].filter(Boolean).join(" ") || undefined;
+  const placeholder = parameter.defaultValue !== undefined ? `Por defecto: ${parameter.defaultValue}` : undefined;
+
+  return (
+    <div className="field">
+      <Label htmlFor={id}>{parameter.name} <span>{location === "path" ? "ruta" : "query"}{parameter.required ? ", requerido" : location === "query" ? ", opcional" : ""}</span></Label>
+      {parameter.options ? (
+        <Select value={value === "" ? UNSET_OPTION : value} onValueChange={(next) => onChange(next === UNSET_OPTION ? "" : next)} disabled={disabled}>
+          <SelectTrigger id={id} aria-label={parameter.name} aria-invalid={missing} aria-describedby={describedBy}><SelectValue placeholder={placeholder ?? "Selecciona un valor"} /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value={UNSET_OPTION}>{placeholder ?? "Sin valor"}</SelectItem>
+            {parameter.options.map((option) => <SelectItem key={option} value={option}><span className="select-endpoint">{option}</span></SelectItem>)}
+          </SelectContent>
+        </Select>
+      ) : (
+        <Input id={id} value={value} onChange={(event) => onChange(event.target.value)} disabled={disabled} autoComplete="off" required={parameter.required} inputMode={parameter.numeric ? "numeric" : undefined} placeholder={placeholder} aria-invalid={missing} aria-describedby={describedBy} />
+      )}
+      {parameter.description ? <small id={descriptionId}>{parameter.description}</small> : parameter.defaultValue !== undefined ? <small id={descriptionId}>Valor por defecto: {parameter.defaultValue}.</small> : null}
+    </div>
+  );
 }
 
 export function Playground({ endpoints }: { readonly endpoints: readonly PlaygroundEndpoint[] }) {
@@ -113,8 +161,8 @@ export function Playground({ endpoints }: { readonly endpoints: readonly Playgro
       <section className="playground-request" aria-labelledby="playground-request-title">
         <header><h2 id="playground-request-title" className="heading-20">Request</h2><p>GET directo desde este tab a api.buscafondos.com, sin proxy.</p></header>
         <div className="field"><Label htmlFor="endpoint">Endpoint</Label><Select value={selectedEndpoint.id} onValueChange={changeEndpoint} disabled={isRequestInFlight}><SelectTrigger id="endpoint" aria-label="Endpoint GET"><SelectValue /></SelectTrigger><SelectContent>{endpoints.map((item) => <SelectItem key={item.id} value={item.id}><span className="select-endpoint">GET {item.path}</span></SelectItem>)}</SelectContent></Select><small>{selectedEndpoint.summary}</small></div>
-        {selectedEndpoint.pathParameters.map((parameter) => <div className="field" key={`path-${parameter.name}`}><Label htmlFor={`path-${parameter.name}`}>{parameter.name} <span>ruta{parameter.required ? ", requerido" : ""}</span></Label><Input id={`path-${parameter.name}`} value={pathValues[parameter.name] ?? ""} onChange={(event) => setPathValues((current) => ({ ...current, [parameter.name]: event.target.value }))} disabled={isRequestInFlight} autoComplete="off" required={parameter.required} aria-invalid={isRequiredParameterMissing(parameter, pathValues)} aria-describedby={isRequiredParameterMissing(parameter, pathValues) ? "playground-required-parameters" : undefined} /></div>)}
-        {selectedEndpoint.queryParameters.map((parameter) => <div className="field" key={`query-${parameter.name}`}><Label htmlFor={`query-${parameter.name}`}>{parameter.name} <span>query{parameter.required ? ", requerido" : ", opcional"}</span></Label><Input id={`query-${parameter.name}`} value={queryValues[parameter.name] ?? ""} onChange={(event) => setQueryValues((current) => ({ ...current, [parameter.name]: event.target.value }))} disabled={isRequestInFlight} autoComplete="off" required={parameter.required} aria-invalid={isRequiredParameterMissing(parameter, queryValues)} aria-describedby={isRequiredParameterMissing(parameter, queryValues) ? "playground-required-parameters" : undefined} /></div>)}
+        {selectedEndpoint.pathParameters.map((parameter) => <ParameterField key={`path-${parameter.name}`} location="path" parameter={parameter} value={pathValues[parameter.name] ?? ""} onChange={(value) => setPathValues((current) => ({ ...current, [parameter.name]: value }))} disabled={isRequestInFlight} />)}
+        {selectedEndpoint.queryParameters.map((parameter) => <ParameterField key={`query-${parameter.name}`} location="query" parameter={parameter} value={queryValues[parameter.name] ?? ""} onChange={(value) => setQueryValues((current) => ({ ...current, [parameter.name]: value }))} disabled={isRequestInFlight} />)}
         {selectedEndpoint.protected ? <div className="field key-field"><Label htmlFor="playground-api-key">API key <span>secreto, solo en memoria</span></Label><Input id="playground-api-key" type="password" value={apiKey} onChange={(event) => setApiKey(event.target.value)} disabled={isRequestInFlight} placeholder="bf_…" autoComplete="off" autoCapitalize="none" spellCheck={false} /><small>Se envía solo en el header X-Api-Key, directamente a la API.</small></div> : null}
         <div className="request-preview"><span>GET</span><code>{requestUrl}</code></div>
         {hasMissingRequiredParameters ? <p id="playground-required-parameters" className="response-error" role="alert">{missingRequiredParametersMessage}</p> : null}

@@ -19,6 +19,18 @@ const requiredQueryEndpoint: PlaygroundEndpoint = {
   queryParameters: [{ name: "administrator", required: true }],
 };
 
+const enumEndpoint: PlaygroundEndpoint = {
+  id: "returns",
+  path: "/api/real_assets/{asset_id}/returns",
+  summary: "Rentabilidades de una serie",
+  protected: true,
+  pathParameters: [{ name: "asset_id", required: true, description: "ID CRC32 de la serie", numeric: true }],
+  queryParameters: [
+    { name: "as_of_date", required: false, description: "Corte YYYY-MM-DD" },
+    { name: "valuation", required: false, options: ["accounting", "clp", "real_uf"], defaultValue: "accounting", description: "Base de valorización" },
+  ],
+};
+
 afterEach(() => vi.restoreAllMocks());
 
 describe("playground credential handling", () => {
@@ -107,5 +119,27 @@ describe("playground required parameters", () => {
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
     expect(fetchMock).toHaveBeenCalledWith("https://api.buscafondos.com/api/agf_stats/evolution?administrator=BANCHILE", expect.objectContaining({ method: "GET" }));
+  });
+});
+
+describe("playground parameter metadata", () => {
+  it("renders enum parameters as a select, numeric hints and contract descriptions", () => {
+    const { container } = render(<Playground endpoints={[enumEndpoint]} />);
+    const playground = within(container);
+
+    const assetInput = playground.getByLabelText(/asset_id/i);
+    expect(assetInput).toHaveAttribute("inputmode", "numeric");
+    expect(assetInput).toHaveAccessibleDescription(/ID CRC32 de la serie/);
+
+    const valuation = playground.getByRole("combobox", { name: "valuation" });
+    expect(valuation).toHaveTextContent("Por defecto: accounting");
+    expect(valuation).toHaveAccessibleDescription(/Base de valorización/);
+    expect(container.querySelector("#query-valuation")).toBe(valuation);
+    expect(container.querySelector("input#query-valuation")).toBeNull();
+  });
+
+  it("omits unset optional parameters from the request URL", () => {
+    expect(buildPlaygroundRequest(enumEndpoint, { asset_id: "71452046" }, { valuation: "", as_of_date: "" })).toBe("https://api.buscafondos.com/api/real_assets/71452046/returns");
+    expect(buildPlaygroundRequest(enumEndpoint, { asset_id: "71452046" }, { valuation: "clp" })).toBe("https://api.buscafondos.com/api/real_assets/71452046/returns?valuation=clp");
   });
 });
