@@ -2,6 +2,33 @@
 
 Cambios públicos del portal y del contrato de la API. Cada entrada indica fecha efectiva, endpoints o modelos afectados, compatibilidad hacia atrás, acción requerida y enlace a la referencia actualizada.
 
+## 2026-10-02: Continuidad de series renombradas
+
+**Impacto:** aditivo en el contrato, con cambio de comportamiento en `/days`, `/returns`, `/compare`, `/screener` y `/all-funds` para las series renombradas. **Acción requerida:** si guardas IDs de series BCI renombradas, puedes seguir usándolos como entrada. Si cruzas respuestas por ID, considera que `/compare`, `/screener` y `/all-funds` devuelven el ID vigente; usa `seriesContinuity.aliasIds` para mapear el ID anterior.
+
+### Comportamiento
+
+- La API reconoce 18 series BCI que la CMF publicó con una etiqueta nueva desde el 24 de septiembre de 2026. Ambos IDs de serie, el anterior y el vigente, resuelven a la misma identidad. Los valores cuota no se modifican. Las series Familia (`FAMIL`) absorbidas por otra serie no se vinculan: su historia termina el 23 de septiembre de 2026 y sigue separada.
+- [`GET /api/real_assets/{asset_id}/days`](/reference#get-api-real-assets-asset-id-days) entrega la misma secuencia continua con cualquiera de los dos IDs y conserva el ID solicitado en los recursos.
+- [`GET /api/real_assets/{asset_id}/returns`](/reference#get-api-real-assets-asset-id-returns) calcula sobre el historial continuo, conserva el ID solicitado e informa la etiqueta de serie vigente a la fecha de corte.
+- [`GET /api/compare`](/reference#get-api-compare) acepta los IDs anteriores. Si pides el ID anterior y el vigente de una misma serie, la respuesta trae **una sola** serie canónica, con el ID vigente, así que puede tener menos elementos que los IDs solicitados.
+- [`GET /api/screener`](/reference#get-api-screener) lista una sola fila por serie renombrada, con el ID vigente.
+- [`GET /api/all-funds`](/reference#get-api-all-funds) lista una sola fila por serie renombrada, con el ID vigente y variaciones diaria y mensual que cruzan el cambio de etiqueta. Agrega los campos `price_as_of_date` (fecha del valor cuota) y `seriesContinuity`. El schema de esta respuesta sigue sin declararse en OpenAPI.
+
+### Modelos
+
+- Nuevo: `SeriesContinuity`, con `type` (hoy solo `rename`), `previousSerie`, `currentSerie`, `firstCurrentDate` (primera fecha observada con la etiqueta nueva) y `aliasIds` (ID vigente primero, luego el anterior).
+- `MarketAttributes`, usado por `/api/compare` y `/api/screener`, agrega `seriesContinuity` opcional y nullable. Es `null` cuando la serie no tiene renombre.
+
+## 2026-10-01: Nueva cuota del tier free
+
+**Impacto:** restrictivo para las keys del tier `free`. **Acción requerida:** revisa tu consumo diario con [`GET /api/key/info`](/reference#get-api-key-info). Si supera 300 requests, optimiza o solicita más cuota.
+
+- La cuota diaria del tier `free` baja de 5.000 a **300 requests/día**. Aplica a las keys nuevas y a las existentes. Las keys no cambian y siguen funcionando.
+- El tier `institutional` (referencia: 25.000 requests/día) y el límite por IP de 10 requests/segundo (ráfagas de 20) no cambian.
+- Si necesitas más cuota, escribe a [api@buscafondos.com](mailto:api@buscafondos.com) indicando tu requerimiento (requests diarias estimadas, endpoints y frecuencia) y tu justificación (caso de uso y por qué la cuota `free` no alcanza).
+- La tabla completa y recomendaciones para rendir la cuota están en [límites por tier](/quotas-errors#limites-por-tier).
+
 ## 2026-09-06: Rentabilidades, comparador y screener
 
 **Impacto:** aditivo. Ningún endpoint existente cambia de forma incompatible. **Acción requerida:** ninguna.

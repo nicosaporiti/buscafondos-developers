@@ -127,7 +127,7 @@ export default function HomePage() {
           <p>Registro, autenticación y manejo de cuota. Cada paso enlaza a su guía.</p>
         </div>
         <ol className="steps">
-          <li><h3 className="heading-16">Obtén una key gratuita</h3><p>El registro verifica tu email y muestra la key una sola vez. Guárdala en el gestor de secretos del servidor.</p><Link className="link-arrow" href="/api-keys">Emisión y consumo <ArrowIcon width={14} height={14} /></Link></li>
+          <li><h3 className="heading-16">Obtén una key gratuita</h3><p>El registro verifica tu email y muestra la key una sola vez. El tier free permite 300 requests al día; para más, escribe a api@buscafondos.com.</p><Link className="link-arrow" href="/api-keys">Emisión y consumo <ArrowIcon width={14} height={14} /></Link></li>
           <li><h3 className="heading-16">Envía el header X-Api-Key</h3><p>Es el único security scheme declarado en OpenAPI. Verifica la key con /api/key/info; esa llamada no descuenta cuota.</p><Link className="link-arrow" href="/authentication">Autenticación <ArrowIcon width={14} height={14} /></Link></li>
           <li><h3 className="heading-16">Lee la cuota en los headers</h3><p>Cada respuesta informa límite, remanente y timestamp de reset. Reintenta 429 y 5xx respetando Retry-After.</p><Link className="link-arrow" href="/quotas-errors">Cuotas y errores <ArrowIcon width={14} height={14} /></Link></li>
         </ol>

@@ -23,7 +23,7 @@ El middleware también acepta `Authorization: Bearer` cuando el token comienza c
 
 ## Verificar key, cuota y consumo
 
-`GET /api/key/info` devuelve nombre, tier, `daily_quota`, `quota_enforced`, fecha de creación y `requests_today`. La respuesta lleva `Cache-Control: no-store` y la llamada no descuenta cuota.
+`GET /api/key/info` devuelve nombre, tier, `daily_quota`, `quota_enforced`, fecha de creación y `requests_today`. La respuesta lleva `Cache-Control: no-store` y la llamada no descuenta cuota. Los límites de cada tier están en [Cuotas y errores](/quotas-errors#limites-por-tier).
 
 ## Backend frente a navegador
 

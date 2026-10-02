@@ -41,3 +41,11 @@ Las operaciones de cuenta no llevan `X-Api-Key` porque usan su propio contrato (
 ## Respuestas `503` declaradas parcialmente
 
 `GET /api/all-funds`, `GET /api/real_assets/{asset_id}/returns`, `GET /api/compare` y `GET /api/screener` declaran `503`; el resto de las operaciones protegidas siguen sin declararlo aunque el middleware puede producirlo. La guía de cuotas describe el comportamiento general.
+
+## Campos de `/api/all-funds` sin schema
+
+Desde el 2 de octubre de 2026, `GET /api/all-funds` incluye `price_as_of_date` y `seriesContinuity` en cada fila. El `200` sigue declarando `schema: {}` y el ejemplo publicado no muestra esos campos. El changelog los describe; la referencia generada no los infiere. `SeriesContinuity` sí está declarado como modelo porque lo usa `MarketAttributes` (`/api/compare` y `/api/screener`).
+
+## Límites por tier fuera del contrato
+
+OpenAPI no declara las cuotas por tier (`free`, `institutional`, `internal`) ni el límite por IP. El portal las documenta en la guía de cuotas a partir de la política de uso y de la configuración del backend vigente desde el 1 de octubre de 2026 (`free` = 300 requests/día). Las keys pueden tener cuotas asignadas distintas; la fuente autoritativa para cada key es `X-RateLimit-Limit` o `GET /api/key/info`.

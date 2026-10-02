@@ -3,7 +3,39 @@ import { Callout } from "@/components/callout"
 
 # Cuotas y errores
 
-Cada key puede tener una cuota diaria que se reinicia a medianoche en `America/Santiago`. Además, la política de uso limita el tráfico por IP a 10 requests por segundo, con ráfagas de hasta 20.
+Cada key tiene una cuota diaria que depende de su tier y se reinicia a medianoche en `America/Santiago`. Además, cada IP tiene un límite de 10 requests por segundo (ráfagas de hasta 20), independiente de la key y del tier.
+
+<h2 id="limites-por-tier">Límites por tier</h2>
+
+| Tier | Cuota diaria por defecto | Cómo se obtiene |
+| --- | --- | --- |
+| `free` | **300 requests/día** | Registro en [api.buscafondos.com/register](https://api.buscafondos.com/register), sin costo. |
+| `institutional` | Se acuerda según el caso de uso. Referencia: **25.000 requests/día** | Solicitud a [api@buscafondos.com](mailto:api@buscafondos.com) con requerimiento y justificación. |
+| `internal` | Sin límite diario (por defecto) | Reservado para servicios propios de BuscaFondos. No se asigna a terceros. |
+
+- **Desde el 1 de octubre de 2026**, la cuota del tier `free` bajó de 5.000 a **300 requests/día**. Las keys `free` existentes siguen funcionando sin cambios en autenticación.
+- El límite de **10 requests/segundo por IP (ráfagas de 20)** aplica a todos los tiers, incluido `institutional`. Repartir tráfico entre muchas IPs para evadirlo se considera abuso.
+- Una key puede tener una cuota asignada distinta a la del tier. La cuota vigente de tu key es la que informa el header `X-RateLimit-Limit` en las respuestas de datos, o `daily_quota` en [`GET /api/key/info`](/reference#get-api-key-info).
+- **Cada request autenticada descuenta cuota, aunque responda `4xx` o `5xx`.** Solo `GET /api/key/info` y los `429` por cuota agotada no descuentan.
+- Al agotar la cuota, la API responde `429` con `X-RateLimit-Remaining: 0` hasta el próximo reinicio diario (`X-RateLimit-Reset`). No reintentes antes de esa hora. Un `429` por exceso de tasa por IP, en cambio, trae `Retry-After: 1` y no incluye headers `X-RateLimit-*`.
+
+<Callout title="¿Necesitas más de 300 requests al día?">
+
+Escribe a [api@buscafondos.com](mailto:api@buscafondos.com) indicando tu **requerimiento** y tu **justificación**:
+
+- **Requerimiento:** requests diarias estimadas, endpoints que usarás y frecuencia de actualización (por ejemplo, una carga diaria o consultas en tiempo real).
+- **Justificación:** caso de uso, quién consume los datos (uso interno, producto público, investigación) y por qué la cuota `free` no alcanza.
+
+Incluye el email con el que registraste la key, pero nunca la key misma. Según la solicitud, se asigna el tier `institutional` o una cuota ajustada a tu key.
+
+</Callout>
+
+### Cómo rendir la cuota
+
+- [`GET /api/all-funds`](/reference#get-api-all-funds) entrega en una sola request el listado completo de fondos vigentes con precio, variaciones diaria y mensual, y TAC. Úsalo en lugar de recorrer serie por serie.
+- Guarda en caché las respuestas: los valores cuota se publican una vez al día.
+- [`GET /api/key/info`](/reference#get-api-key-info) muestra tu tier, cuota y consumo del día, y no descuenta cuota.
+- Si necesitas el dataset completo o actualizaciones periódicas de muchos fondos, escribe antes de automatizar la descarga. Puede existir una forma más eficiente para ti y para la API.
 
 ## Headers de cuota
 
@@ -20,7 +52,7 @@ Los cuatro headers están expuestos vía CORS, así que también son legibles de
 
 - `401 Unauthorized`: falta la key, es inválida o fue revocada. Incluye `WWW-Authenticate: Bearer`.
 - `403 Forbidden`: no forma parte del flujo de API key en los endpoints de datos. Hoy solo aparece en las rutas de cuenta cuando el origen no es confiable. No lo interpretes como cuota agotada.
-- `429 Too Many Requests`: cuota diaria agotada o exceso de tasa. Cuando se agota la cuota, incluye los cuatro headers anteriores.
+- `429 Too Many Requests`: cuota diaria agotada o exceso de tasa por IP. Cuando se agota la cuota, incluye los cuatro headers anteriores, `X-RateLimit-Remaining` en `0` y un `Retry-After` que puede llegar a horas. El exceso de tasa responde `Retry-After: 1` sin headers `X-RateLimit-*`.
 - `5xx`: falla transitoria o datos en actualización. La validación de keys y algunos resúmenes pueden responder `503` con `Retry-After: 5`.
 
 <Callout title="Origen de esta información">El snapshot OpenAPI no declara estas respuestas del middleware en cada operación. El comportamiento descrito fue verificado contra el backend y la política de uso pública. La referencia generada muestra únicamente lo que declara OpenAPI.</Callout>
@@ -34,6 +66,11 @@ Los cuatro headers están expuestos vía CORS, así que también son legibles de
     });
 
     if (response.ok || ![429, 500, 502, 503, 504].includes(response.status)) {
+      return response;
+    }
+
+    // Cuota diaria agotada: no tiene sentido reintentar hasta el reinicio.
+    if (response.status === 429 && response.headers.get("X-RateLimit-Remaining") === "0") {
       return response;
     }
 

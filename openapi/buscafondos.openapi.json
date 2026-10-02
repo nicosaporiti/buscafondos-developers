@@ -4223,6 +4223,16 @@
             "type": "string",
             "title": "Serieid"
           },
+          "seriesContinuity": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SeriesContinuity"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "currency": {
             "anyOf": [
               {
@@ -5168,6 +5178,45 @@
           "meta"
         ],
         "title": "ScreenerResponse"
+      },
+      "SeriesContinuity": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "rename",
+            "title": "Type"
+          },
+          "previousSerie": {
+            "type": "string",
+            "title": "Previousserie"
+          },
+          "currentSerie": {
+            "type": "string",
+            "title": "Currentserie"
+          },
+          "firstCurrentDate": {
+            "type": "string",
+            "format": "date",
+            "title": "Firstcurrentdate"
+          },
+          "aliasIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Aliasids"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "type",
+          "previousSerie",
+          "currentSerie",
+          "firstCurrentDate",
+          "aliasIds"
+        ],
+        "title": "SeriesContinuity"
       },
       "SpheresComparability": {
         "properties": {

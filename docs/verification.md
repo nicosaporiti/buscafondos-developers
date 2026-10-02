@@ -1,6 +1,6 @@
 # Verificación
 
-Fecha: 6 de septiembre de 2026 (actualización del snapshot OpenAPI: rentabilidades, comparador y screener).
+Fecha: 2 de octubre de 2026 (snapshot OpenAPI con `SeriesContinuity` y documentación de límites por tier). Esta fecha corresponde a la verificación automatizada; la sección Visual corresponde a la revisión del 6 de septiembre de 2026.
 
 ## Automatizada
 
