@@ -1,15 +1,15 @@
 # Verificación
 
-Fecha: 2 de octubre de 2026 (snapshot OpenAPI con `SeriesContinuity` y documentación de límites por tier). Esta fecha corresponde a la verificación automatizada; la sección Visual corresponde a la revisión del 6 de septiembre de 2026.
+Fecha: 11 de octubre de 2026 (snapshot OpenAPI con fondos de inversión, ETF y `vehicle` en `/api/all-funds`). Esta fecha corresponde a la verificación automatizada; la sección Visual corresponde a la revisión del 6 de septiembre de 2026.
 
 ## Automatizada
 
 | Comando | Resultado |
 | --- | --- |
-| `npm run openapi:validate` | PASS — 34 rutas, 36 operaciones |
+| `npm run openapi:validate` | PASS — 39 rutas, 41 operaciones |
 | `npm run lint` | PASS — sin warnings |
 | `npm run typecheck` | PASS — TypeScript strict |
-| `npm test` | PASS — 10 archivos, 38 pruebas |
+| `npm test` | PASS — 10 archivos, 41 pruebas |
 | `npm run build` | PASS — 13 rutas listadas como `○ Static`; 14 páginas estáticas generadas; fuentes Geist self-hosted |
 | `npm run check:bundle-secrets` | PASS — 456 artefactos revisados, sin patrones de API key |
 
@@ -23,7 +23,8 @@ Fecha: 2 de octubre de 2026 (snapshot OpenAPI con `SeriesContinuity` y documenta
 - key solo en header, nunca en URL ni storage, y limpieza explícita;
 - curl generado según método y body;
 - renderizado de `requestBody` y query params requeridos;
-- presencia de `/api/real_assets/{asset_id}/returns`, `/api/compare` y `/api/screener` con `X-Api-Key`, orden del tag declarado `Fund Returns` y conservación del tag no declarado `Reports`;
+- presencia de `/api/real_assets/{asset_id}/returns`, `/api/compare` y `/api/screener` con `X-Api-Key`, orden del tag declarado `Fund Returns` y conservación de los tags no declarados `Reports` e `Investment Funds`;
+- cinco rutas GET `/api/fi/instruments…` con `X-Api-Key`, `asset_id` como `string` no numérico, opciones de `vehicle` con default `mutual_fund` y `scope=all` declarado como `const`;
 - tipos de parámetro resueltos (`string | null`, `$ref`), enums, defaults y hint numérico en referencia y playground;
 - estado pendiente y `CopyButton`;
 - esquema de seguridad, headings y breakpoint responsive;

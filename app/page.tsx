@@ -17,8 +17,8 @@ const useCases = [
   {
     audience: "Programadores y equipos de producto",
     title: "Aplicaciones para inversionistas",
-    text: "Comparadores, alertas de precio, simuladores de ahorro y paneles de seguimiento con valores cuota diarios y variaciones del mercado.",
-    paths: ["/api/all-funds", "/api/real_assets/{asset_id}/days", "/api/market-summary"],
+    text: "Comparadores, alertas de precio, simuladores de ahorro y paneles de seguimiento con valores cuota diarios y variaciones del mercado. Fondos de inversión y ETF suman valores libro CMF.",
+    paths: ["/api/all-funds", "/api/real_assets/{asset_id}/days", "/api/fi/instruments", "/api/market-summary"],
   },
   {
     audience: "Analistas y gestores de inversión",
@@ -58,7 +58,7 @@ export default function HomePage() {
       <section className="home-opening container grid-12" aria-labelledby="home-title">
         <div className="opening-claim span-7">
           <h1 id="home-title" className="display">API de fondos mutuos chilenos.</h1>
-          <p className="lede">Valores cuota diarios, TAC, métricas de riesgo, carteras y estadísticas de administradoras, construidos a partir de la información pública de la CMF. Autenticación por header, respuestas JSON.</p>
+          <p className="lede">Valores cuota diarios, TAC, métricas de riesgo, carteras y estadísticas de administradoras, construidos a partir de la información pública de la CMF. Incluye fondos de inversión y ETF con valores libro CMF. Autenticación por header, respuestas JSON.</p>
           <div className="actions">
             <Button asChild size="lg"><Link href={siteConfig.registerUrl}>Obtener API key</Link></Button>
             <Button asChild size="lg" variant="outline"><Link href="/quickstart">Leer quickstart <ArrowIcon /></Link></Button>

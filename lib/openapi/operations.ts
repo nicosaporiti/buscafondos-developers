@@ -100,12 +100,13 @@ export function parameterType(schema: JsonSchemaLike | undefined): string {
   return unique.length > 0 ? unique.join(" | ") : "sin tipo";
 }
 
-/** Allowed values declared inline or through a `$ref` to a components schema; `undefined` when the parameter is free-form. */
+/** Allowed values (`enum` or `const`) declared inline or through a `$ref` to a components schema; `undefined` when the parameter is free-form. */
 export function parameterOptions(schema: JsonSchemaLike | undefined, document?: OpenApiDocument): readonly string[] | undefined {
   if (!schema) return undefined;
   const values = variants(schema).flatMap((variant) => {
     const target = resolveReference(variant, document) ?? variant;
-    return Array.isArray(target.enum) ? target.enum.filter((value): value is string | number | boolean => ["string", "number", "boolean"].includes(typeof value)).map(String) : [];
+    const declared = Array.isArray(target.enum) ? target.enum : "const" in target ? [target.const] : [];
+    return declared.filter((value): value is string | number | boolean => ["string", "number", "boolean"].includes(typeof value)).map(String);
   });
   return values.length > 0 ? values : undefined;
 }

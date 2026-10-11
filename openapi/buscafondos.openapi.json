@@ -93,6 +93,453 @@
         }
       }
     },
+    "/api/fi/instruments": {
+      "get": {
+        "tags": [
+          "Investment Funds"
+        ],
+        "summary": "Instruments",
+        "operationId": "instruments_api_fi_instruments_get",
+        "parameters": [
+          {
+            "name": "provider_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Provider Id"
+            }
+          },
+          {
+            "name": "is_etf",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Is Etf"
+            }
+          },
+          {
+            "name": "regulatory_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "FIRES",
+                    "FINRE"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Regulatory Type"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "active",
+                "inactive",
+                "unknown",
+                "all"
+              ],
+              "type": "string",
+              "default": "active",
+              "title": "Status"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 200
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-Api-Key": []
+          }
+        ]
+      }
+    },
+    "/api/fi/instruments/{instrument_id}": {
+      "get": {
+        "tags": [
+          "Investment Funds"
+        ],
+        "summary": "Instrument",
+        "operationId": "instrument_api_fi_instruments__instrument_id__get",
+        "parameters": [
+          {
+            "name": "instrument_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Instrument Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-Api-Key": []
+          }
+        ]
+      }
+    },
+    "/api/fi/instruments/{instrument_id}/prices": {
+      "get": {
+        "tags": [
+          "Investment Funds"
+        ],
+        "summary": "Prices",
+        "operationId": "prices_api_fi_instruments__instrument_id__prices_get",
+        "parameters": [
+          {
+            "name": "instrument_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Instrument Id"
+            }
+          },
+          {
+            "name": "from_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "From Date"
+            }
+          },
+          {
+            "name": "to_date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "To Date"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 5000,
+              "minimum": 1,
+              "default": 1000,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-Api-Key": []
+          }
+        ]
+      }
+    },
+    "/api/fi/instruments/{instrument_id}/cartera/holdings": {
+      "get": {
+        "tags": [
+          "Investment Funds"
+        ],
+        "summary": "Cartera Holdings",
+        "operationId": "cartera_holdings_api_fi_instruments__instrument_id__cartera_holdings_get",
+        "parameters": [
+          {
+            "name": "instrument_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Instrument Id"
+            }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Month"
+            }
+          },
+          {
+            "name": "market",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "N",
+                "E",
+                "all"
+              ],
+              "type": "string",
+              "default": "all",
+              "title": "Market"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-Api-Key": []
+          }
+        ]
+      }
+    },
+    "/api/fi/instruments/{instrument_id}/cartera/resumen": {
+      "get": {
+        "tags": [
+          "Investment Funds"
+        ],
+        "summary": "Cartera Resumen",
+        "operationId": "cartera_resumen_api_fi_instruments__instrument_id__cartera_resumen_get",
+        "parameters": [
+          {
+            "name": "instrument_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Instrument Id"
+            }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Month"
+            }
+          },
+          {
+            "name": "market",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "N",
+                "E",
+                "all"
+              ],
+              "type": "string",
+              "default": "all",
+              "title": "Market"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "X-Api-Key": []
+          }
+        ]
+      }
+    },
     "/api/asset_providers": {
       "get": {
         "tags": [
@@ -101,6 +548,25 @@
         "summary": "Listar administradoras",
         "description": "Retorna todas las Administradoras Generales de Fondos (AGF) registradas.",
         "operationId": "list_providers_api_asset_providers_get",
+        "parameters": [
+          {
+            "name": "scope",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "const": "all",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Scope"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Lista de administradoras en formato JSON:API",
@@ -117,6 +583,16 @@
                       }
                     }
                   ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -201,19 +677,18 @@
           "Real Assets"
         ],
         "summary": "Rentabilidades de una serie",
-        "description": "Ocho ventanas en fracción decimal, con fechas y motivos de ausencia.\n\nMoneda contable por defecto; CLP y real UF requieren habilitación explícita.\nTotal agrega factores y canjes verificados sólo en ventanas con cobertura.",
+        "description": "Ocho ventanas en fracción decimal, con fechas y motivos de ausencia.\n\nMoneda contable por defecto; CLP y real UF requieren habilitación explícita.\nTotal agrega factores y canjes verificados sólo en ventanas con cobertura.\nFI/ETF acepta UUID y usa valores libro CMF (quota_source=cmf_valor_libro);\nsin factores verificados sólo admite return_basis=price.",
         "operationId": "get_returns_api_real_assets__asset_id__returns_get",
         "parameters": [
           {
             "name": "asset_id",
             "in": "path",
             "required": true,
-            "description": "ID CRC32 de la serie",
+            "description": "CRC32 de FM o UUID estable de FI/ETF",
             "schema": {
-              "type": "integer",
-              "maximum": 4294967295,
-              "minimum": 0,
-              "description": "ID CRC32 de la serie",
+              "type": "string",
+              "pattern": "^(?:[0-9]{1,10}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+              "description": "CRC32 de FM o UUID estable de FI/ETF",
               "title": "Asset Id"
             }
           },
@@ -387,17 +862,18 @@
           "Real Assets"
         ],
         "summary": "Valores cuota diarios de una serie",
-        "description": "Retorna el historial de valores cuota diarios para una serie, opcionalmente filtrado desde una fecha.",
+        "description": "Historial de cuotas FM o valores libro CMF FI/ETF, filtrable por from_date.\n\nLos ETF conservan id/type/attributes.date/attributes.price del contrato FM.",
         "operationId": "get_days_api_real_assets__asset_id__days_get",
         "parameters": [
           {
             "name": "asset_id",
             "in": "path",
             "required": true,
-            "description": "ID numérico de la serie / real asset (CRC32)",
+            "description": "CRC32 de FM o UUID estable de FI/ETF",
             "schema": {
-              "type": "integer",
-              "description": "ID numérico de la serie / real asset (CRC32)",
+              "type": "string",
+              "pattern": "^(?:[0-9]{1,10}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+              "description": "CRC32 de FM o UUID estable de FI/ETF",
               "title": "Asset Id"
             }
           },
@@ -468,10 +944,11 @@
             "name": "asset_id",
             "in": "path",
             "required": true,
-            "description": "ID numérico de la serie / real asset (CRC32)",
+            "description": "CRC32 de FM o UUID estable de FI/ETF",
             "schema": {
-              "type": "integer",
-              "description": "ID numérico de la serie / real asset (CRC32)",
+              "type": "string",
+              "pattern": "^(?:[0-9]{1,10}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+              "description": "CRC32 de FM o UUID estable de FI/ETF",
               "title": "Asset Id"
             }
           }
@@ -529,10 +1006,11 @@
             "name": "asset_id",
             "in": "path",
             "required": true,
-            "description": "ID numerico de la serie / real asset (CRC32)",
+            "description": "CRC32 de FM o UUID estable de FI/ETF",
             "schema": {
-              "type": "integer",
-              "description": "ID numerico de la serie / real asset (CRC32)",
+              "type": "string",
+              "pattern": "^(?:[0-9]{1,10}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+              "description": "CRC32 de FM o UUID estable de FI/ETF",
               "title": "Asset Id"
             }
           }
@@ -599,10 +1077,11 @@
             "name": "asset_id",
             "in": "path",
             "required": true,
-            "description": "ID numérico de la serie / real asset (CRC32)",
+            "description": "CRC32 de FM o UUID estable de FI/ETF",
             "schema": {
-              "type": "integer",
-              "description": "ID numérico de la serie / real asset (CRC32)",
+              "type": "string",
+              "pattern": "^(?:[0-9]{1,10}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+              "description": "CRC32 de FM o UUID estable de FI/ETF",
               "title": "Asset Id"
             }
           },
@@ -1221,7 +1700,7 @@
           "All Funds"
         ],
         "summary": "Listar todos los fondos del mercado con variaciones",
-        "description": "Retorna fondos vigentes, coalesciendo misses por respuesta efectiva.",
+        "description": "FM by default; ETF and redeemable FI share CMF accounting quota fields.\n\n`all` combines disjoint vehicles and preserves the FM metadata cutoff.\nUUID series identities remain stable; unknown documentary data stays null.\nAll risk and catalog calculations are materialized offline.",
         "operationId": "list_all_funds_api_all_funds_get",
         "parameters": [
           {
@@ -1296,6 +1775,24 @@
               "description": "Filtrar por lo que declara el reglamento sobre el artículo 107",
               "title": "Article107 Regulation Status"
             }
+          },
+          {
+            "name": "vehicle",
+            "in": "query",
+            "required": false,
+            "description": "Vehículo: mutual_fund, etf, investment_fund (FI rescatable no ETF) o all.",
+            "schema": {
+              "enum": [
+                "mutual_fund",
+                "etf",
+                "investment_fund",
+                "all"
+              ],
+              "type": "string",
+              "description": "Vehículo: mutual_fund, etf, investment_fund (FI rescatable no ETF) o all.",
+              "default": "mutual_fund",
+              "title": "Vehicle"
+            }
           }
         ],
         "responses": {
@@ -1307,6 +1804,7 @@
                 "example": {
                   "data": [
                     {
+                      "vehicle": "mutual_fund",
                       "agf": "BANCHILE ADMINISTRADORA...",
                       "fundName": "FM BCH AGRESIVO",
                       "fundId": "926287998",
@@ -2598,7 +3096,11 @@
           },
           "quota_source": {
             "type": "string",
-            "const": "CMF",
+            "enum": [
+              "CMF",
+              "market_close",
+              "cmf_valor_libro"
+            ],
             "title": "Quota Source",
             "default": "CMF"
           },
@@ -3851,7 +4353,11 @@
           },
           "quota_source": {
             "type": "string",
-            "const": "CMF",
+            "enum": [
+              "CMF",
+              "market_close",
+              "cmf_valor_libro"
+            ],
             "title": "Quota Source",
             "default": "CMF"
           },
@@ -4716,7 +5222,11 @@
           },
           "quota_source": {
             "type": "string",
-            "const": "CMF",
+            "enum": [
+              "CMF",
+              "market_close",
+              "cmf_valor_libro"
+            ],
             "title": "Quota Source",
             "default": "CMF"
           },
@@ -5806,8 +6316,9 @@
         "properties": {
           "serie_id": {
             "type": "string",
-            "maxLength": 10,
-            "title": "Serie Id"
+            "maxLength": 36,
+            "title": "Serie Id",
+            "description": "CRC32 de FM o UUID estable de ETF"
           }
         },
         "type": "object",

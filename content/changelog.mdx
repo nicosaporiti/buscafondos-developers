@@ -2,6 +2,47 @@
 
 Cambios públicos del portal y del contrato de la API. Cada entrada indica fecha efectiva, endpoints o modelos afectados, compatibilidad hacia atrás, acción requerida y enlace a la referencia actualizada.
 
+## 2026-10-08: Fondos de inversión y ETF
+
+**Impacto:** aditivo para quien consume fondos mutuos con los parámetros por defecto, con un cambio de tipo en el contrato: `asset_id` de las rutas `/api/real_assets/{asset_id}/*` pasa de `integer` a `string`. **Acción requerida:** si generas un SDK desde OpenAPI, regenéralo y trata `asset_id` y `serieId` como texto. Los IDs numéricos de fondos mutuos siguen funcionando igual. Si pides `vehicle=etf`, `investment_fund` o `all`, considera que `serieId` puede ser un UUID.
+
+### Endpoints nuevos
+
+Los cinco requieren `X-Api-Key` y están disponibles en el [playground](/playground). Pertenecen al área `Investment Funds`, que todavía no está declarada en la lista de tags del contrato. Las tres primeras devuelven un objeto `meta` con `generated_at` y `expires_at`; el catálogo y los precios agregan `total`, `limit` y `offset`. Las rutas de cartera usan otro `meta`, descrito abajo.
+
+- [`GET /api/fi/instruments`](/reference#get-api-fi-instruments): catálogo de fondos de inversión y ETF. Filtra por `provider_id`, `is_etf`, `regulatory_type` (`FIRES` o `FINRE`), `status` (`active` por defecto, `inactive`, `unknown` o `all`) y `q` (nombre, ticker o RUN). Pagina con `limit` (100 por defecto, máximo 500) y `offset`.
+- [`GET /api/fi/instruments/{instrument_id}`](/reference#get-api-fi-instruments-instrument-id): detalle de un instrumento por UUID, con su clasificación regulatoria, la última cuota y los bloques `fact_sheet`, `article107`, `patrimony` y `tac` tomados de la ficha CMF. `tac.status` indica la situación del dato: `available`, `pending_review`, `not_checked`, `stale`, `not_reported` o `unavailable_or_conflict`.
+- [`GET /api/fi/instruments/{instrument_id}/prices`](/reference#get-api-fi-instruments-instrument-id-prices): historial de valores libro CMF, con valor económico, patrimonio y aportantes por fecha. Filtra con `from_date` y `to_date` (`YYYY-MM-DD`) y pagina con `limit` (1.000 por defecto, máximo 5.000) y `offset`. Un rango con `from_date` posterior a `to_date` responde `422`.
+- [`GET /api/fi/instruments/{instrument_id}/cartera/holdings`](/reference#get-api-fi-instruments-instrument-id-cartera-holdings) y [`/cartera/resumen`](/reference#get-api-fi-instruments-instrument-id-cartera-resumen): cartera trimestral del fondo, por posición o agrupada por tipo de instrumento. Aceptan `month` (`YYYY-MM`) y `market` (`N` nacional, `E` extranjero o `all`, por defecto). Sin `month`, usan el último período con posiciones observadas y responden `404` si el fondo no tiene ninguno. Con un `month` sin datos responden `200` con `data: []`. Un `month` mal formado responde `400`. `meta` informa `run`, `month`, `availability` (`available` o `unavailable` para `N` y `E`), `sources`, `valuation_unit: "cmf_reported"` y `percentage_unit: "percent_of_fund_assets"`.
+
+Un instrumento que no está publicado responde `404`. Si el servicio de fondos de inversión no está disponible, estas rutas responden `503`.
+
+### Endpoints modificados
+
+- [`GET /api/all-funds`](/reference#get-api-all-funds): nuevo parámetro `vehicle` con `mutual_fund` (por defecto), `etf`, `investment_fund` (fondos de inversión rescatables que no son ETF) o `all`. Sin `vehicle`, la respuesta sigue siendo el universo de fondos mutuos; cada fila agrega el campo `vehicle`.
+  - En filas ETF y de fondos de inversión, `serieId` es un UUID, `fundId` tiene la forma `fi:{run}`, `price` es el último valor libro CMF (`price_basis: "valor_libro"`) y `price_status` indica si la cuota está al día (`current`), atrasada (`stale`) o ausente (`unavailable`). Cuando la cuota no está al día, `dailyChange` y `monthlyChange` son `null`. `category`, `fundFamily`, `investorClass`, `article107RegulationStatus` y `seriesContinuity` son `null`, así que los filtros `category`, `fund_family` y `article107_regulation_status` las excluyen. Sin `date`, `tac` es `null` cuando no hay una ficha CMF revisada y vigente, y solo se listan instrumentos con estado CMF activo.
+  - Con `vehicle=etf` o `investment_fund`, `meta.date` y `meta.previousDate` son la fecha de corte de fondos de inversión y ETF, `meta.agfCount` es `0` y el conteo de administradoras va en `etfAgfCount` o `investmentFundAgfCount`.
+  - Con `vehicle=all`, `meta.date`, `meta.previousDate` y `meta.agfCount` conservan los valores de fondos mutuos; `meta` agrega `etfAgfCount`, `investmentFundAgfCount` y `datesByVehicle` (ETF y fondos de inversión comparten la misma fecha de corte).
+  - Cualquier `vehicle` distinto de `mutual_fund`, incluido `all`, responde `503` si los datos de fondos de inversión no están disponibles. En ese caso tampoco se entregan las filas de fondos mutuos; usa el valor por defecto si solo necesitas fondos mutuos.
+- [`GET /api/asset_providers`](/reference#get-api-asset-providers): nuevo parámetro `scope`. Con `scope=all` incluye las administradoras de fondos de inversión, agrega `coverage` (`FM`, `ETF`, `FI`) a cada administradora y `rut`, `displayName`, `slug`, `instrument_count` y `fund_count` a las que tienen fondos de inversión o ETF. La respuesta agrega `meta` con `generated_at` y `expires_at`. Sin `scope`, la respuesta no cambia. Con `scope=all` puede responder `503` si el servicio de fondos de inversión no está disponible; declara `422` para valores inválidos.
+- [`/days`](/reference#get-api-real-assets-asset-id-days), [`/returns`](/reference#get-api-real-assets-asset-id-returns), [`/expense_ratio`](/reference#get-api-real-assets-asset-id-expense-ratio), [`/expense_ratio/history`](/reference#get-api-real-assets-asset-id-expense-ratio-history) y [`/risk_metrics`](/reference#get-api-real-assets-asset-id-risk-metrics) bajo `/api/real_assets/{asset_id}`: `asset_id` acepta el ID numérico de una serie de fondo mutuo o el UUID de un ETF o fondo de inversión.
+  - Un UUID que no corresponde a un instrumento publicado responde `404`. Si los datos de fondos de inversión no están disponibles, estas rutas responden `503`.
+  - `/days` entrega valores libro CMF en la moneda contable del instrumento; cada día agrega `currency`, `price_source: "cmf"` y `price_basis: "valor_libro"`.
+  - `/returns` usa las mismas ocho ventanas y declara `quota_source: "cmf_valor_libro"`. Para estos instrumentos solo admite `return_basis=price`: `total` responde `422`, o `503` mientras la base total no esté habilitada. Las series en monedas sin conversión disponible (por ejemplo COP) entregan ventanas `null` con motivo `unknown_currency`.
+  - `/expense_ratio` responde `200` con `expense_ratio: null` cuando no hay TAC documentada, y `/expense_ratio/history` responde `data: []` sin observaciones. `/risk_metrics` entrega el último cálculo de riesgo, con `unavailable_reason` cuando no se puede calcular (por ejemplo `unknown_currency`).
+
+### Modelos
+
+- `quota_source` en `ReturnAttributes`, `FundReturnAttributes` y `AdjustedReturnAttributes` pasa de la constante `CMF` a un enum: `CMF`, `market_close` o `cmf_valor_libro`. Hoy las respuestas usan `CMF` para fondos mutuos y `cmf_valor_libro` para fondos de inversión y ETF. `TotalReturnAttributes` mantiene la constante `CMF`.
+- En los modelos de rentabilidad, algunos `minimum` y `maximum` enteros se publican ahora como `0.0` y `31.0`. Es un cambio de serialización, no de contrato.
+- `WatchlistRequest` (rutas de cuenta, fuera de la API pública): `serie_id` admite hasta 36 caracteres para aceptar UUID de ETF.
+
+### Alcance
+
+- [`/api/compare`](/reference#get-api-compare), [`/api/screener`](/reference#get-api-screener), las estadísticas por administradora y los rankings por familia siguen cubriendo solo fondos mutuos.
+- Las rutas de cartera `/api/funds/{run}/cartera/*` no resuelven ETF ni fondos de inversión; usa las rutas de cartera bajo `/api/fi/instruments`.
+- Las respuestas de las rutas `/api/fi/*` no declaran schema en OpenAPI y no traen ejemplo. Los campos descritos en esta entrada provienen del comportamiento del backend, no del contrato publicado.
+
 ## 2026-10-02: Continuidad de series renombradas
 
 **Impacto:** aditivo en el contrato, con cambio de comportamiento en `/days`, `/returns`, `/compare`, `/screener` y `/all-funds` para las series renombradas. **Acción requerida:** si guardas IDs de series BCI renombradas, puedes seguir usándolos como entrada. Si cruzas respuestas por ID, considera que `/compare`, `/screener` y `/all-funds` devuelven el ID vigente; usa `seriesContinuity.aliasIds` para mapear el ID anterior.

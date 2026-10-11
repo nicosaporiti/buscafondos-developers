@@ -6,7 +6,8 @@ describe("OpenAPI reference", () => {
   it("builds navigation by real tags without losing operations", () => {
     const operations = listOperations(openApiDocument);
     const grouped = groupedOperations(openApiDocument).flatMap((group) => group.operations);
-    expect(operations).toHaveLength(36);
+    expect(operations).toHaveLength(41);
+    expect(Object.keys(openApiDocument.paths)).toHaveLength(39);
     expect(grouped).toHaveLength(operations.length);
     expect(operations.some((item) => item.path === "/api/market-summary")).toBe(true);
   });
@@ -17,6 +18,23 @@ describe("OpenAPI reference", () => {
     expect(paths).toEqual(expect.arrayContaining(["/api/real_assets/{asset_id}/returns", "/api/compare", "/api/screener"]));
     for (const path of ["/api/real_assets/{asset_id}/returns", "/api/compare", "/api/screener"]) {
       expect(operations.find((item) => item.path === path)?.operation.security).toEqual([{ "X-Api-Key": [] }]);
+    }
+  });
+
+  it("exposes the investment fund operations under the undeclared Investment Funds tag", () => {
+    const fiPaths = [
+      "/api/fi/instruments",
+      "/api/fi/instruments/{instrument_id}",
+      "/api/fi/instruments/{instrument_id}/prices",
+      "/api/fi/instruments/{instrument_id}/cartera/holdings",
+      "/api/fi/instruments/{instrument_id}/cartera/resumen",
+    ];
+    const group = groupedOperations(openApiDocument).find((item) => item.tag === "Investment Funds");
+    expect(group?.description).toBeUndefined();
+    expect(group?.operations.map((item) => item.path).toSorted()).toEqual(fiPaths.toSorted());
+    for (const operation of group?.operations ?? []) {
+      expect(operation.method).toBe("get");
+      expect(operation.operation.security).toEqual([{ "X-Api-Key": [] }]);
     }
   });
 
@@ -32,7 +50,7 @@ describe("OpenAPI reference", () => {
     const groups = groupedOperations(openApiDocument);
     const declaredTags = new Set(openApiDocument.tags?.map((tag) => tag.name));
     const undeclared = groups.filter((group) => !declaredTags.has(group.tag));
-    expect(undeclared.map((group) => group.tag)).toContain("Reports");
+    expect(undeclared.map((group) => group.tag)).toEqual(expect.arrayContaining(["Reports", "Investment Funds"]));
     const lastDeclaredIndex = groups.findLastIndex((group) => declaredTags.has(group.tag));
     for (const group of undeclared) expect(groups.indexOf(group)).toBeGreaterThan(lastDeclaredIndex);
     expect(groups.flatMap((group) => group.operations)).toHaveLength(listOperations(openApiDocument).length);
@@ -42,8 +60,8 @@ describe("OpenAPI reference", () => {
     const parameters = listOperations(openApiDocument).find((item) => item.path === "/api/real_assets/{asset_id}/returns")!.parameters;
     const byName = (name: string) => parameters.find((parameter) => parameter.name === name)!.schema;
 
-    expect(parameterType(byName("asset_id"))).toBe("integer");
-    expect(isNumericParameter(byName("asset_id"))).toBe(true);
+    expect(parameterType(byName("asset_id"))).toBe("string");
+    expect(isNumericParameter(byName("asset_id"))).toBe(false);
     expect(parameterType(byName("as_of_date"))).toBe("string | null");
     expect(parameterOptions(byName("as_of_date"))).toBeUndefined();
     expect(parameterOptions(byName("valuation"))).toEqual(["accounting", "clp", "real_uf"]);
@@ -57,6 +75,18 @@ describe("OpenAPI reference", () => {
     expect(parameterType(parameter.schema)).toBe("Article107RegulationStatus | null");
     expect(parameterOptions(parameter.schema)).toBeUndefined();
     expect(parameterOptions(parameter.schema, openApiDocument)).toEqual(openApiDocument.components.schemas?.Article107RegulationStatus?.enum);
+  });
+
+  it("offers const values as options, such as scope=all in asset providers", () => {
+    const parameter = listOperations(openApiDocument).find((item) => item.path === "/api/asset_providers")!.parameters.find((item) => item.name === "scope")!;
+    expect(parameterType(parameter.schema)).toBe("string | null");
+    expect(parameterOptions(parameter.schema)).toEqual(["all"]);
+  });
+
+  it("declares the vehicle filter of all-funds with mutual_fund as default", () => {
+    const parameter = listOperations(openApiDocument).find((item) => item.path === "/api/all-funds")!.parameters.find((item) => item.name === "vehicle")!;
+    expect(parameterOptions(parameter.schema)).toEqual(["mutual_fund", "etf", "investment_fund", "all"]);
+    expect(parameterDefault(parameter.schema)).toBe("mutual_fund");
   });
 
   it("marks the health endpoint as public and data endpoints as protected", () => {
